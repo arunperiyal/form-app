@@ -7,38 +7,56 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <h1>Custom Form</h1>
-  <form id="mainForm" enctype="multipart/form-data">
-    <label>Short Answer:
-      <input type="text" name="shortAnswer" required />
-    </label>
+  <div class="form-container">
+    <h1>Custom Form</h1>
+    <form id="mainForm" enctype="multipart/form-data" novalidate>
+      
+      <div class="form-group">
+        <label for="shortAnswer">Short Answer:</label>
+        <input type="text" name="shortAnswer" id="shortAnswer" pattern=".{3,}" required />
+        <small class="error-message">At least 3 characters required.</small>
+      </div>
 
-    <label>Long Answer:
-      <textarea name="longAnswer" required></textarea>
-    </label>
+      <div class="form-group">
+        <label for="longAnswer">Long Answer:</label>
+        <textarea name="longAnswer" id="longAnswer" rows="4" required></textarea>
+        <small class="error-message">This field is required.</small>
+      </div>
 
-    <label>Checkbox Options:</label>
-    <label><input type="checkbox" name="multiSelect[]" value="Option A" /> Option A</label>
-    <label><input type="checkbox" name="multiSelect[]" value="Option B" /> Option B</label>
+      <fieldset class="form-group">
+        <legend>Checkbox Options:</legend>
+        <label><input type="checkbox" name="multiSelect[]" value="Option A" /> Option A</label>
+        <label><input type="checkbox" name="multiSelect[]" value="Option B" /> Option B</label>
+      </fieldset>
 
-    <label>Radio Options:</label>
-    <label><input type="radio" name="singleSelect" value="Yes" required /> Yes</label>
-    <label><input type="radio" name="singleSelect" value="No" /> No</label>
+      <fieldset class="form-group">
+        <legend>Radio Options:</legend>
+        <label><input type="radio" name="singleSelect" value="Yes" required /> Yes</label>
+        <label><input type="radio" name="singleSelect" value="No" /> No</label>
+      </fieldset>
 
-    <label>Dropdown:
-      <select name="dropdown" required>
-        <option value="">Choose...</option>
-        <option value="Alpha">Alpha</option>
-        <option value="Beta">Beta</option>
-      </select>
-    </label>
+      <div class="form-group">
+        <label for="dropdown">Dropdown:</label>
+        <select name="dropdown" id="dropdown" required>
+          <option value="">Choose...</option>
+          <option value="Alpha">Alpha</option>
+          <option value="Beta">Beta</option>
+        </select>
+        <small class="error-message">Please select an option.</small>
+      </div>
 
-    <label>File Upload (Max 1MB):
-      <input type="file" name="upload" accept=".pdf,.jpg,.png" />
-    </label>
+      <div class="form-group">
+        <label for="upload">File Upload (Max 1MB):</label>
+        <input type="file" name="upload" id="upload" accept=".pdf,.jpg,.png" />
+      </div>
 
-    <button type="submit">Submit</button>
-  </form>
+      <button type="submit">Submit</button>
+    </form>
+
+    <div id="progressBarContainer">
+      <div id="progressBar"></div>
+    </div>
+  </div>
 
   <script src="script.js"></script>
 </body>
