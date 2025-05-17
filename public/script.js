@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const progressBarContainer = document.getElementById('progressBarContainer');
 
   // Load saved data
-  const fields = ['shortAnswer', 'longAnswer', 'dropdown'];
+  const fields = ['shortAnswer', 'longAnswer', 'dropdown', 'date', 'time', 'phone', 'email', 'number', 'website', 'scale'];
   fields.forEach(field => {
     const saved = localStorage.getItem(field);
     if (saved) document.getElementById(field).value = saved;
