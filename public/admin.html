@@ -2,30 +2,42 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Login</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Panel</title>
+  <link rel="stylesheet" href="admin.css">
 </head>
 <body>
-  <h1>Admin Access</h1>
-  <form id="adminForm">
-    <input type="password" id="password" placeholder="Enter Password" required />
-    <button type="submit">Login</button>
-  </form>
-  <pre id="output"></pre>
+  <div id="login-screen">
+    <h2>Admin Login</h2>
+    <input type="password" id="admin-password" placeholder="Enter admin password" />
+    <button onclick="verifyPassword()">Login</button>
+    <p id="login-error" class="error"></p>
+  </div>
 
-  <script>
-    document.getElementById('adminForm').onsubmit = async (e) => {
-      e.preventDefault();
-      const res = await fetch('/admin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: document.getElementById('password').value })
-      });
-      const data = await res.json();
-      document.getElementById('output').textContent = data.error || JSON.stringify(data.responses, null, 2);
-    };
-  </script>
+  <div id="admin-panel" class="hidden">
+    <div class="admin-header">
+      <h1>Form Submissions</h1>
+      <div>
+        <button onclick="downloadCSV()">Download CSV</button>
+        <button onclick="logout()">Logout</button>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table id="submissions-table">
+        <thead>
+          <tr id="table-header">
+            <!-- Filled dynamically -->
+          </tr>
+        </thead>
+        <tbody id="table-body">
+          <!-- Filled dynamically -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="admin.js"></script>
 </body>
 </html>
 
