@@ -1,53 +1,55 @@
 const express = require('express');
-const path = require('path');
 const multer = require('multer');
-const sqlite3 = require('sqlite3').verbose();
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
+const path = require('path');
 const fs = require('fs');
-require('dotenv').config();
+const sqlite3 = require('sqlite3').verbose();
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+const cors = require('cors');
+const { v4: uuidv4 } = require('uuid');
 
-// Initialize Express app
+// Initialize express app
 const app = express();
-const port = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cors());
+
+// Serve static files from public directory
 app.use(express.static('public'));
+
+// Create uploads directory if it doesn't exist
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir);
+}
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    // Ensure uploads directory exists
-    const dir = path.join(__dirname, 'uploads');
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    cb(null, dir);
+    cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
-    // Create unique filename
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const ext = path.extname(file.originalname);
-    cb(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
+    // Create unique filename with original extension
+    const fileExt = path.extname(file.originalname);
+    const fileName = `${uuidv4()}${fileExt}`;
+    cb(null, fileName);
   }
 });
 
-// File filter
+// File filter for allowed types
 const fileFilter = (req, file, cb) => {
-  // Accept only certain file types
-  const allowedTypes = ['.pdf', '.jpg', '.jpeg', '.png'];
-  const ext = path.extname(file.originalname).toLowerCase();
-  
-  if (allowedTypes.includes(ext)) {
-    return cb(null, true);
+  const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Invalid file type. Only PDF, JPG, and PNG are allowed.'), false);
   }
-  
-  cb(new Error('Invalid file type. Only PDF, JPG, and PNG are allowed.'));
 };
 
-// Configure upload with size limit (1MB)
+// Configure upload limits
 const upload = multer({
   storage,
   fileFilter,
@@ -56,269 +58,104 @@ const upload = multer({
   }
 });
 
-// Initialize database
-const db = new sqlite3.Database('./database.sqlite', (err) => {
+// Database setup
+const db = new sqlite3.Database('./responses.db', (err) => {
   if (err) {
     console.error('Error connecting to database:', err.message);
   } else {
-    console.log('Connected to SQLite database');
+    console.log('Connected to the SQLite database.');
     initDatabase();
   }
 });
 
 // Initialize database tables
 function initDatabase() {
-  // Create tables if they don't exist
-  db.serialize(() => {
-    // Create submissions table
-    db.run(`
-      CREATE TABLE IF NOT EXISTS submissions (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        short_answer TEXT,
-        long_answer TEXT,
-        multi_select TEXT,
-        single_select TEXT,
-        date TEXT,
-        time TEXT,
-        phone TEXT,
-        email TEXT,
-        number INTEGER,
-        website TEXT,
-        scale INTEGER,
-        dropdown TEXT,
-        file TEXT,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-    
-    // Create admin users table
-    db.run(`
-      CREATE TABLE IF NOT EXISTS admins (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT UNIQUE,
-        password TEXT,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-      )
-    `, function(err) {
-      if (err) {
-        console.error('Error creating admins table:', err.message);
-      } else {
-        // Check if default admin exists
-        db.get('SELECT * FROM admins LIMIT 1', (err, row) => {
-          if (err) {
-            console.error('Error checking admin:', err.message);
-          } else if (!row) {
-            // Create default admin with bcrypt hashed password
-            const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
-            bcrypt.hash(adminPassword, 10, (err, hash) => {
-              if (err) {
-                console.error('Error hashing password:', err.message);
-              } else {
-                db.run('INSERT INTO admins (username, password) VALUES (?, ?)', ['admin', hash], function(err) {
+  // Create submissions table
+  db.run(`CREATE TABLE IF NOT EXISTS submissions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    shortAnswer TEXT,
+    longAnswer TEXT,
+    multiSelect TEXT,
+    singleSelect TEXT,
+    date TEXT,
+    time TEXT,
+    phone TEXT,
+    email TEXT,
+    number INTEGER,
+    website TEXT,
+    scale INTEGER,
+    dropdown TEXT,
+    file TEXT,
+    created_at TEXT
+  )`);
+  
+  // Create admin table with hash for password
+  db.run(`CREATE TABLE IF NOT EXISTS admin (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT UNIQUE,
+    password TEXT
+  )`, [], function(err) {
+    if (err) {
+      console.error('Error creating admin table:', err.message);
+    } else {
+      // Check if admin exists, if not create default admin user
+      db.get("SELECT * FROM admin LIMIT 1", [], (err, row) => {
+        if (err) {
+          console.error(err.message);
+        } else if (!row) {
+          // Hash a default password - change this in production!
+          const defaultPassword = "admin123";
+          bcrypt.hash(defaultPassword, 10, (err, hash) => {
+            if (err) {
+              console.error("Error hashing password:", err);
+            } else {
+              db.run(
+                `INSERT INTO admin (username, password) VALUES (?, ?)`,
+                ["admin", hash],
+                function(err) {
                   if (err) {
-                    console.error('Error creating default admin:', err.message);
+                    console.error("Error creating default admin:", err.message);
                   } else {
-                    console.log('Default admin created. Username: admin, Password:', adminPassword);
+                    console.log("Default admin created. Username: admin, Password: admin123");
+                    console.log("Please change this password after first login!");
                   }
-                });
-              }
-            });
-          }
-        });
-      }
-    });
+                }
+              );
+            }
+          });
+        }
+      });
+    }
   });
 }
 
-// JWT Secret
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+// JWT secret - in production, use environment variables for this!
+const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
 
 // Middleware to verify JWT token
-function authenticate(req, res, next) {
-  const authHeader = req.headers.authorization;
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
   
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ success: false, message: 'Unauthorized' });
+  if (!token) {
+    return res.status(401).json({ success: false, message: 'No token provided' });
   }
-  
-  const token = authHeader.split(' ')[1];
-  
-  jwt.verify(token, JWT_SECRET, (err, decoded) => {
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
     if (err) {
-      return res.status(401).json({ success: false, message: 'Invalid token' });
+      return res.status(403).json({ success: false, message: 'Invalid or expired token' });
     }
-    
-    req.userId = decoded.id;
+    req.user = user;
     next();
   });
 }
 
 // Routes
 
-// Serve admin panel
-app.get('/admin', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
-});
-
-// Admin authentication
-app.post('/admin/auth', (req, res) => {
-  const { password } = req.body;
-  
-  if (!password) {
-    return res.status(400).json({ success: false, message: 'Password is required' });
-  }
-  
-  db.get('SELECT * FROM admins WHERE username = ?', ['admin'], (err, admin) => {
-    if (err) {
-      console.error('Database error:', err);
-      return res.status(500).json({ success: false, message: 'Server error' });
-    }
-    
-    if (!admin) {
-      return res.status(401).json({ success: false, message: 'Authentication failed' });
-    }
-    
-    bcrypt.compare(password, admin.password, (err, match) => {
-      if (err) {
-        console.error('Bcrypt error:', err);
-        return res.status(500).json({ success: false, message: 'Server error' });
-      }
-      
-      if (!match) {
-        return res.status(401).json({ success: false, message: 'Authentication failed' });
-      }
-      
-      // Generate JWT token
-      const token = jwt.sign({ id: admin.id, username: admin.username }, JWT_SECRET, { expiresIn: '1h' });
-      
-      res.json({ success: true, token });
-    });
-  });
-});
-
-// Verify token
-app.post('/admin/verify', authenticate, (req, res) => {
-  res.json({ success: true });
-});
-
-// Get submissions
-app.get('/admin/submissions', authenticate, (req, res) => {
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 10;
-  const offset = (page - 1) * limit;
-  
-  db.all('SELECT * FROM submissions ORDER BY created_at DESC LIMIT ? OFFSET ?', [limit, offset], (err, submissions) => {
-    if (err) {
-      console.error('Database error:', err);
-      return res.status(500).json({ success: false, message: 'Server error' });
-    }
-    
-    // Get total count for pagination
-    db.get('SELECT COUNT(*) as count FROM submissions', (err, result) => {
-      if (err) {
-        console.error('Database error:', err);
-        return res.status(500).json({ success: false, message: 'Server error' });
-      }
-      
-      res.json({
-        success: true,
-        submissions,
-        pagination: {
-          total: result.count,
-          page,
-          limit,
-          pages: Math.ceil(result.count / limit)
-        }
-      });
-    });
-  });
-});
-
-// Delete submission
-app.delete('/admin/submission/:id', authenticate, (req, res) => {
-  const id = req.params.id;
-  
-  if (!id) {
-    return res.status(400).json({ success: false, message: 'Submission ID is required' });
-  }
-  
-  // Get file path before deleting
-  db.get('SELECT file FROM submissions WHERE id = ?', [id], (err, submission) => {
-    if (err) {
-      console.error('Database error:', err);
-      return res.status(500).json({ success: false, message: 'Server error' });
-    }
-    
-    // Delete from database
-    db.run('DELETE FROM submissions WHERE id = ?', [id], function(err) {
-      if (err) {
-        console.error('Database error:', err);
-        return res.status(500).json({ success: false, message: 'Server error' });
-      }
-      
-      // If no rows affected
-      if (this.changes === 0) {
-        return res.status(404).json({ success: false, message: 'Submission not found' });
-      }
-      
-      // Delete file if exists
-      if (submission && submission.file) {
-        const filePath = path.join(__dirname, 'uploads', submission.file);
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath);
-        }
-      }
-      
-      res.json({ success: true, message: 'Submission deleted successfully' });
-    });
-  });
-});
-
-// Submit form endpoint
+// Form submission route
 app.post('/submit-form', upload.single('upload'), (req, res) => {
   try {
     const {
-      shortAnswer,
-      longAnswer,
-      singleSelect,
-      date,
-      time,
-      phone,
-      email,
-      number,
-      website,
-      scale,
-      dropdown
-    } = req.body;
-    
-    // Handle multi-select checkboxes (comes as array)
-    const multiSelect = req.body.multiSelect ? 
-      (Array.isArray(req.body.multiSelect) ? 
-        req.body.multiSelect.join(', ') : 
-        req.body.multiSelect) : 
-      null;
-    
-    // Get file info if uploaded
-    const file = req.file ? req.file.filename : null;
-    
-    // Insert into database
-    db.run(`
-      INSERT INTO submissions (
-        short_answer, 
-        long_answer, 
-        multi_select, 
-        single_select, 
-        date, 
-        time, 
-        phone, 
-        email, 
-        number, 
-        website, 
-        scale, 
-        dropdown, 
-        file
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `, [
       shortAnswer,
       longAnswer,
       multiSelect,
@@ -327,54 +164,170 @@ app.post('/submit-form', upload.single('upload'), (req, res) => {
       time,
       phone,
       email,
-      number || null,
+      number,
       website,
-      scale || null,
+      scale,
       dropdown,
-      file
-    ], function(err) {
-      if (err) {
-        console.error('Database error:', err);
-        return res.status(500).json({ success: false, message: 'Error saving submission' });
+      submitted_at
+    } = req.body;
+
+    // Format multiSelect array as JSON string
+    const multiSelectJSON = Array.isArray(multiSelect) 
+      ? JSON.stringify(multiSelect) 
+      : multiSelect ? JSON.stringify([multiSelect]) : '[]';
+    
+    // Get file path if present
+    const filePath = req.file ? req.file.filename : null;
+    
+    // Insert into database
+    db.run(
+      `INSERT INTO submissions (
+        shortAnswer, longAnswer, multiSelect, singleSelect, date, time, phone, email, 
+        number, website, scale, dropdown, file, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        shortAnswer, longAnswer, multiSelectJSON, singleSelect, date, time, phone, email,
+        number, website, scale, dropdown, filePath, submitted_at || new Date().toISOString()
+      ],
+      function(err) {
+        if (err) {
+          console.error("Database error:", err);
+          return res.status(500).json({ success: false, message: 'Database error' });
+        }
+        
+        res.json({ success: true, message: 'Form submitted successfully!', id: this.lastID });
+      }
+    );
+  } catch (error) {
+    console.error("Submission error:", error);
+    res.status(500).json({ success: false, message: 'Server error processing your submission' });
+  }
+});
+
+// Admin authentication
+app.post('/admin/auth', (req, res) => {
+  const { password } = req.body;
+  
+  // Get admin user from database
+  db.get("SELECT * FROM admin WHERE username = ?", ["admin"], (err, row) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ success: false, message: 'Database error' });
+    }
+    
+    if (!row) {
+      return res.status(401).json({ success: false, message: 'Authentication failed' });
+    }
+    
+    // Compare password
+    bcrypt.compare(password, row.password, (err, result) => {
+      if (err || !result) {
+        return res.status(401).json({ success: false, message: 'Authentication failed' });
       }
       
-      res.json({ success: true, message: 'Form submitted successfully', id: this.lastID });
+      // Generate JWT token
+      const token = jwt.sign({ id: row.id, username: row.username }, JWT_SECRET, { expiresIn: '2h' });
+      
+      res.json({ success: true, token });
     });
-  } catch (error) {
-    console.error('Form submission error:', error);
-    res.status(500).json({ success: false, message: 'An error occurred' });
-  }
-});
-
-// Handle file upload errors
-app.use((err, req, res, next) => {
-  if (err instanceof multer.MulterError) {
-    if (err.code === 'LIMIT_FILE_SIZE') {
-      return res.status(400).json({ success: false, message: 'File is too large. Maximum size is 1MB.' });
-    }
-    return res.status(400).json({ success: false, message: err.message });
-  }
-  
-  if (err) {
-    return res.status(500).json({ success: false, message: err.message });
-  }
-  
-  next();
-});
-
-// Serve uploaded files
-app.use('/uploads', authenticate, express.static(path.join(__dirname, 'uploads')));
-
-// Start server
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-});
-
-// Graceful shutdown
-process.on('SIGINT', () => {
-  db.close(() => {
-    console.log('Database connection closed');
-    process.exit(0);
   });
 });
 
+// Verify admin token
+app.post('/admin/verify', authenticateToken, (req, res) => {
+  res.json({ success: true });
+});
+
+// Get all submissions
+app.get('/admin/submissions', authenticateToken, (req, res) => {
+  // Get pagination parameters
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const offset = (page - 1) * limit;
+  
+  // Get total count
+  db.get("SELECT COUNT(*) as total FROM submissions", [], (err, row) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ success: false, message: 'Database error' });
+    }
+    
+    const total = row.total;
+    
+    // Get submissions with pagination
+    db.all(
+      "SELECT * FROM submissions ORDER BY created_at DESC LIMIT ? OFFSET ?",
+      [limit, offset],
+      (err, rows) => {
+        if (err) {
+          console.error("Database error:", err);
+          return res.status(500).json({ success: false, message: 'Database error' });
+        }
+        
+        // Parse multiSelect JSON strings
+        const submissions = rows.map(row => {
+          try {
+            if (row.multiSelect) {
+              row.multiSelect = JSON.parse(row.multiSelect);
+            }
+          } catch (e) {
+            row.multiSelect = [];
+          }
+          return row;
+        });
+        
+        res.json({
+          success: true,
+          submissions,
+          pagination: {
+            total,
+            page,
+            limit,
+            pages: Math.ceil(total / limit)
+          }
+        });
+      }
+    );
+  });
+});
+
+// Delete submission
+app.delete('/admin/submission/:id', authenticateToken, (req, res) => {
+  const { id } = req.params;
+  
+  // Get file info first to delete file if exists
+  db.get("SELECT file FROM submissions WHERE id = ?", [id], (err, row) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ success: false, message: 'Database error' });
+    }
+    
+    // Delete from database
+    db.run("DELETE FROM submissions WHERE id = ?", [id], function(err) {
+      if (err) {
+        console.error("Database error:", err);
+        return res.status(500).json({ success: false, message: 'Database error' });
+      }
+      
+      if (this.changes === 0) {
+        return res.status(404).json({ success: false, message: 'Submission not found' });
+      }
+      
+      // Delete file if exists
+      if (row && row.file) {
+        const filePath = path.join(uploadDir, row.file);
+        fs.unlink(filePath, (err) => {
+          if (err) console.error("Error deleting file:", err);
+        });
+      }
+      
+      res.json({ success: true, message: 'Submission deleted successfully' });
+    });
+  });
+});
+
+// Start server
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  console.log(`Open http://localhost:${PORT} in your browser`);
+});
