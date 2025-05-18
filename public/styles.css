@@ -36,6 +36,12 @@ label {
 }
 
 input[type="text"],
+input[type="tel"],
+input[type="email"],
+input[type="number"],
+input[type="url"],
+input[type="date"],
+input[type="time"],
 textarea,
 select,
 input[type="file"] {
@@ -116,53 +122,71 @@ input:invalid, textarea:invalid, select:invalid {
   height: 100%;
   width: 0%;
   background-color: #007acc;
-  
-.form-group {
-  margin-bottom: 16px;
+  transition: width 1s ease;
 }
 
-.scale-radio-group {
+.radio-scale {
   display: flex;
   justify-content: space-between;
+  gap: 10px;
   margin-top: 8px;
 }
 
-.scale-radio-group label {
-  flex: 1;
-  text-align: center;
-  padding: 8px 0;
+/* Checked effect */
+.scale-option input:checked + span {
+  border: 2px solid #000;
+  padding: 6px 10px;
+  background-color: rgba(255, 255, 255, 0.2);
   border-radius: 6px;
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
 }
 
-.scale-radio-group input[type="radio"] {
+.scale-option {
+  flex: 1;
+  text-align: center;
+  border-radius: 8px;
+  color: #fff;
+  padding: 12px 0;
+  font-weight: bold;
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.scale-option input {
   display: none;
 }
 
-.scale-radio-group label:nth-child(1) {
-  background-color: #d9534f; /* red */
-}
-.scale-radio-group label:nth-child(2) {
-  background-color: #f0ad4e; /* orange */
-}
-.scale-radio-group label:nth-child(3) {
-  background-color: #f9c74f; /* yellow */
-  color: #333;
-}
-.scale-radio-group label:nth-child(4) {
-  background-color: #5cb85c; /* light green */
-}
-.scale-radio-group label:nth-child(5) {
-  background-color: #4cae4c; /* green */
+.scale-option span {
+  display: block;
 }
 
-/* Selected State */
-.scale-radio-group input[type="radio"]:checked + label {
-  outline: 3px solid #007acc;
+/* Color by value */
+.scale-option.red { background-color: #e74c3c; }
+.scale-option.orange { background-color: #e67e22; }
+.scale-option.yellow { background-color: #f1c40f; color: #333; }
+.scale-option.lightgreen { background-color: #2ecc71; }
+.scale-option.green { background-color: #27ae60; }
+
+.hidden {
+  display: none;
 }
 
+/* Form feedback */
+.form-success {
+  padding: 15px;
+  background-color: #dff0d8;
+  color: #3c763d;
+  border-radius: 6px;
+  margin-top: 20px;
+  display: none;
+}
 
+/* Accessibility improvements */
+input:focus, 
+textarea:focus, 
+select:focus, 
+button:focus {
+  outline: 2px solid #007acc;
+  outline-offset: 2px;
+}
 

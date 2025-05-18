@@ -13,14 +13,14 @@
       
       <div class="form-group">
         <label for="shortAnswer">Short Answer:</label>
-        <input type="text" name="shortAnswer" id="shortAnswer" pattern=".{3,}" required />
-        <small class="error-message">At least 3 characters required.</small>
+        <input type="text" name="shortAnswer" id="shortAnswer" pattern=".{3,}" required aria-describedby="shortAnswerError" />
+        <small id="shortAnswerError" class="error-message">At least 3 characters required.</small>
       </div>
 
       <div class="form-group">
         <label for="longAnswer">Long Answer:</label>
-        <textarea name="longAnswer" id="longAnswer" rows="4" required></textarea>
-        <small class="error-message">This field is required.</small>
+        <textarea name="longAnswer" id="longAnswer" rows="4" required aria-describedby="longAnswerError"></textarea>
+        <small id="longAnswerError" class="error-message">This field is required.</small>
       </div>
 
       <fieldset class="form-group">
@@ -31,72 +31,95 @@
 
       <fieldset class="form-group">
         <legend>Radio Options:</legend>
-        <label><input type="radio" name="singleSelect" value="Yes" required /> Yes</label>
+        <label><input type="radio" name="singleSelect" value="Yes" required aria-describedby="singleSelectError" /> Yes</label>
         <label><input type="radio" name="singleSelect" value="No" /> No</label>
+        <small id="singleSelectError" class="error-message">Please select an option.</small>
       </fieldset>
       
       <div class="form-group">
         <label for="date">Date:</label>
-        <input type="date" id="date" name="date" required />
+        <input type="date" id="date" name="date" required aria-describedby="dateError" />
+        <small id="dateError" class="error-message">Please select a date.</small>
       </div>
 
       <div class="form-group">
         <label for="time">Time:</label>
-        <input type="time" id="time" name="time" required />
+        <input type="time" id="time" name="time" required aria-describedby="timeError" />
+        <small id="timeError" class="error-message">Please select a time.</small>
       </div>
 
       <div class="form-group">
         <label for="phone">Phone Number:</label>
-        <input type="tel" id="phone" name="phone" pattern="^\+?\d{10,15}$" required />
-        <small class="error-message">Enter a valid phone number (10–15 digits).</small>
+        <input type="tel" id="phone" name="phone" pattern="^\+?\d{10,15}$" required aria-describedby="phoneError" />
+        <small id="phoneError" class="error-message">Enter a valid phone number (10–15 digits).</small>
       </div>
 
       <div class="form-group">
         <label for="email">Email:</label>
-        <input type="email" id="email" name="email" required />
-        <small class="error-message">Enter a valid email address.</small>
+        <input type="email" id="email" name="email" required aria-describedby="emailError" />
+        <small id="emailError" class="error-message">Enter a valid email address.</small>
       </div>
 
       <div class="form-group">
         <label for="number">Quantity:</label>
-        <input type="number" id="number" name="number" min="0" max="100" />
+        <input type="number" id="number" name="number" min="0" max="100" aria-describedby="numberError" />
+        <small id="numberError" class="error-message">Enter a number between 0 and 100.</small>
       </div>
 
       <div class="form-group">
         <label for="website">Website URL:</label>
-        <input type="url" id="website" name="website" />
+        <input type="url" id="website" name="website" aria-describedby="websiteError" />
+        <small id="websiteError" class="error-message">Enter a valid URL (including http:// or https://).</small>
       </div>
       
       <div class="form-group">
-        <label>Rate from 1 to 5:</label>
-        <div class="scale-radio-group">
-          <label><input type="radio" name="scale" value="1" required /> 1</label>
-          <label><input type="radio" name="scale" value="2" /> 2</label>
-          <label><input type="radio" name="scale" value="3" /> 3</label>
-          <label><input type="radio" name="scale" value="4" /> 4</label>
-          <label><input type="radio" name="scale" value="5" /> 5</label>
+        <label>Rate your satisfaction:</label>
+        <div class="radio-scale" role="radiogroup" aria-labelledby="satisfactionLabel" aria-describedby="scaleError">
+          <span id="satisfactionLabel" class="visually-hidden">Satisfaction Rating</span>
+          <label class="scale-option red">
+            <input type="radio" name="scale" value="1" required />
+            <span>1</span>
+          </label>
+          <label class="scale-option orange">
+            <input type="radio" name="scale" value="2" />
+            <span>2</span>
+          </label>
+          <label class="scale-option yellow">
+            <input type="radio" name="scale" value="3" />
+            <span>3</span>
+          </label>
+          <label class="scale-option lightgreen">
+            <input type="radio" name="scale" value="4" />
+            <span>4</span>
+          </label>
+          <label class="scale-option green">
+            <input type="radio" name="scale" value="5" />
+            <span>5</span>
+          </label>
         </div>
+        <small id="scaleError" class="error-message">Please select a rating.</small>
       </div>
 
       <div class="form-group">
         <label for="dropdown">Dropdown:</label>
-        <select name="dropdown" id="dropdown" required>
+        <select name="dropdown" id="dropdown" required aria-describedby="dropdownError">
           <option value="">Choose...</option>
           <option value="Alpha">Alpha</option>
           <option value="Beta">Beta</option>
         </select>
-        <small class="error-message">Please select an option.</small>
+        <small id="dropdownError" class="error-message">Please select an option.</small>
       </div>
 
       <div class="form-group">
         <label for="upload">File Upload (Max 1MB):</label>
-        <input type="file" name="upload" id="upload" accept=".pdf,.jpg,.png" />
+        <input type="file" name="upload" id="upload" accept=".pdf,.jpg,.png" aria-describedby="uploadError" />
+        <small id="uploadError" class="error-message">File must be PDF, JPG, or PNG and under 1MB.</small>
       </div>
 
       <button type="submit">Submit</button>
     </form>
 
-    <div id="progressBarContainer">
+    <div id="progressBarContainer" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
       <div id="progressBar"></div>
     </div>
   </div>
@@ -104,4 +127,3 @@
   <script src="script.js"></script>
 </body>
 </html>
-
