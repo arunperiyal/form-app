@@ -1,149 +1,111 @@
 const express = require('express');
-const multer = require('multer');
+const app = express();
 const path = require('path');
+const multer = require('multer');
 const fs = require('fs');
 const sqlite3 = require('sqlite3').verbose();
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
-const cors = require('cors');
-const { v4: uuidv4 } = require('uuid');
+const crypto = require('crypto');
 
-// Initialize express app
-const app = express();
+// Configuration
 const PORT = process.env.PORT || 3000;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123'; // Change this in production!
+const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(64).toString('hex');
+const DB_PATH = path.join(__dirname, 'responses.db');
 
-// Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(cors());
-
-// Serve static files from public directory
-app.use(express.static('public'));
-
-// Create uploads directory if it doesn't exist
-const uploadDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir);
+// Ensure uploads directory exists
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    // Create unique filename with original extension
-    const fileExt = path.extname(file.originalname);
-    const fileName = `${uuidv4()}${fileExt}`;
-    cb(null, fileName);
-  }
-});
-
-// File filter for allowed types
-const fileFilter = (req, file, cb) => {
-  const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
-  if (allowedTypes.includes(file.mimetype)) {
-    cb(null, true);
-  } else {
-    cb(new Error('Invalid file type. Only PDF, JPG, and PNG are allowed.'), false);
-  }
-};
-
-// Configure upload limits
-const upload = multer({
-  storage,
-  fileFilter,
-  limits: {
-    fileSize: 1024 * 1024 // 1MB
-  }
-});
-
-// Database setup
-const db = new sqlite3.Database('./responses.db', (err) => {
+// Connect to SQLite database
+const db = new sqlite3.Database(DB_PATH, (err) => {
   if (err) {
-    console.error('Error connecting to database:', err.message);
+    console.error('Database connection error:', err);
   } else {
-    console.log('Connected to the SQLite database.');
+    console.log('Connected to the SQLite database');
     initDatabase();
   }
 });
 
-// Initialize database tables
+// Initialize database with required tables
 function initDatabase() {
-  // Create submissions table
-  db.run(`CREATE TABLE IF NOT EXISTS submissions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    shortAnswer TEXT,
-    longAnswer TEXT,
-    multiSelect TEXT,
-    singleSelect TEXT,
-    date TEXT,
-    time TEXT,
-    phone TEXT,
-    email TEXT,
-    number INTEGER,
-    website TEXT,
-    scale INTEGER,
-    dropdown TEXT,
-    file TEXT,
-    created_at TEXT
-  )`);
-  
-  // Create admin table with hash for password
-  db.run(`CREATE TABLE IF NOT EXISTS admin (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT UNIQUE,
-    password TEXT
-  )`, [], function(err) {
+  db.run(`
+    CREATE TABLE IF NOT EXISTS submissions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      shortAnswer TEXT,
+      longAnswer TEXT,
+      multiSelect TEXT,
+      singleSelect TEXT,
+      date TEXT,
+      time TEXT,
+      phone TEXT,
+      email TEXT,
+      number INTEGER,
+      website TEXT,
+      scale INTEGER,
+      dropdown TEXT,
+      file TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `, (err) => {
     if (err) {
-      console.error('Error creating admin table:', err.message);
+      console.error('Error creating submissions table:', err);
     } else {
-      // Check if admin exists, if not create default admin user
-      db.get("SELECT * FROM admin LIMIT 1", [], (err, row) => {
-        if (err) {
-          console.error(err.message);
-        } else if (!row) {
-          // Hash a default password - change this in production!
-          const defaultPassword = "admin123";
-          bcrypt.hash(defaultPassword, 10, (err, hash) => {
-            if (err) {
-              console.error("Error hashing password:", err);
-            } else {
-              db.run(
-                `INSERT INTO admin (username, password) VALUES (?, ?)`,
-                ["admin", hash],
-                function(err) {
-                  if (err) {
-                    console.error("Error creating default admin:", err.message);
-                  } else {
-                    console.log("Default admin created. Username: admin, Password: admin123");
-                    console.log("Please change this password after first login!");
-                  }
-                }
-              );
-            }
-          });
-        }
-      });
+      console.log('Submissions table created or already exists');
     }
   });
 }
 
-// JWT secret - in production, use environment variables for this!
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
+// Configure multer storage for file uploads
+const storage = multer.diskStorage({
+  destination: function(req, file, cb) {
+    cb(null, uploadsDir);
+  },
+  filename: function(req, file, cb) {
+    // Generate unique filename
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const fileExtension = path.extname(file.originalname);
+    cb(null, uniqueSuffix + fileExtension);
+  }
+});
 
-// Middleware to verify JWT token
+// File upload middleware with file type and size validation
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 1024 * 1024 // 1MB limit
+  },
+  fileFilter: function(req, file, cb) {
+    // Accept only specific file types
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type. Only PDF, JPG, and PNG are allowed.'));
+    }
+  }
+});
+
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Authentication middleware for admin routes
 function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
   
   if (!token) {
-    return res.status(401).json({ success: false, message: 'No token provided' });
+    return res.status(401).json({ success: false, error: 'Unauthorized' });
   }
 
   jwt.verify(token, JWT_SECRET, (err, user) => {
     if (err) {
-      return res.status(403).json({ success: false, message: 'Invalid or expired token' });
+      return res.status(401).json({ success: false, error: 'Invalid token' });
     }
     req.user = user;
     next();
@@ -151,174 +113,106 @@ function authenticateToken(req, res, next) {
 }
 
 // Routes
-
-// Form submission route
-app.post('/submit-form', upload.single('upload'), (req, res) => {
-  try {
-    const {
-      shortAnswer,
-      longAnswer,
-      multiSelect,
-      singleSelect,
-      date,
-      time,
-      phone,
-      email,
-      number,
-      website,
-      scale,
-      dropdown,
-      submitted_at
-    } = req.body;
-
-    // Format multiSelect array as JSON string
-    const multiSelectJSON = Array.isArray(multiSelect) 
-      ? JSON.stringify(multiSelect) 
-      : multiSelect ? JSON.stringify([multiSelect]) : '[]';
-    
-    // Get file path if present
-    const filePath = req.file ? req.file.filename : null;
-    
-    // Insert into database
-    db.run(
-      `INSERT INTO submissions (
-        shortAnswer, longAnswer, multiSelect, singleSelect, date, time, phone, email, 
-        number, website, scale, dropdown, file, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        shortAnswer, longAnswer, multiSelectJSON, singleSelect, date, time, phone, email,
-        number, website, scale, dropdown, filePath, submitted_at || new Date().toISOString()
-      ],
-      function(err) {
-        if (err) {
-          console.error("Database error:", err);
-          return res.status(500).json({ success: false, message: 'Database error' });
-        }
-        
-        res.json({ success: true, message: 'Form submitted successfully!', id: this.lastID });
-      }
-    );
-  } catch (error) {
-    console.error("Submission error:", error);
-    res.status(500).json({ success: false, message: 'Server error processing your submission' });
-  }
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Admin authentication
-app.post('/admin/auth', (req, res) => {
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
+// Admin login
+app.post('/admin/login', (req, res) => {
   const { password } = req.body;
   
-  // Get admin user from database
-  db.get("SELECT * FROM admin WHERE username = ?", ["admin"], (err, row) => {
-    if (err) {
-      console.error("Database error:", err);
-      return res.status(500).json({ success: false, message: 'Database error' });
-    }
-    
-    if (!row) {
-      return res.status(401).json({ success: false, message: 'Authentication failed' });
-    }
-    
-    // Compare password
-    bcrypt.compare(password, row.password, (err, result) => {
-      if (err || !result) {
-        return res.status(401).json({ success: false, message: 'Authentication failed' });
-      }
-      
-      // Generate JWT token
-      const token = jwt.sign({ id: row.id, username: row.username }, JWT_SECRET, { expiresIn: '2h' });
-      
-      res.json({ success: true, token });
-    });
-  });
+  if (password !== ADMIN_PASSWORD) {
+    return res.status(401).json({ success: false, error: 'Invalid password' });
+  }
+  
+  // Generate token
+  const token = jwt.sign({ isAdmin: true }, JWT_SECRET, { expiresIn: '2h' });
+  res.json({ success: true, token });
 });
 
-// Verify admin token
-app.post('/admin/verify', authenticateToken, (req, res) => {
-  res.json({ success: true });
-});
-
-// Get all submissions
+// Get submissions
 app.get('/admin/submissions', authenticateToken, (req, res) => {
-  // Get pagination parameters
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
   const offset = (page - 1) * limit;
   
-  // Get total count
-  db.get("SELECT COUNT(*) as total FROM submissions", [], (err, row) => {
+  // Count total submissions
+  db.get('SELECT COUNT(*) as total FROM submissions', [], (err, count) => {
     if (err) {
-      console.error("Database error:", err);
-      return res.status(500).json({ success: false, message: 'Database error' });
+      console.error('Error counting submissions:', err);
+      return res.status(500).json({ success: false, error: 'Database error' });
     }
     
-    const total = row.total;
+    const total = count.total;
+    const pages = Math.ceil(total / limit);
     
-    // Get submissions with pagination
-    db.all(
-      "SELECT * FROM submissions ORDER BY created_at DESC LIMIT ? OFFSET ?",
-      [limit, offset],
-      (err, rows) => {
-        if (err) {
-          console.error("Database error:", err);
-          return res.status(500).json({ success: false, message: 'Database error' });
-        }
-        
-        // Parse multiSelect JSON strings
-        const submissions = rows.map(row => {
-          try {
-            if (row.multiSelect) {
-              row.multiSelect = JSON.parse(row.multiSelect);
-            }
-          } catch (e) {
-            row.multiSelect = [];
-          }
-          return row;
-        });
-        
-        res.json({
-          success: true,
-          submissions,
-          pagination: {
-            total,
-            page,
-            limit,
-            pages: Math.ceil(total / limit)
-          }
-        });
+    // Get submissions for current page
+    db.all('SELECT * FROM submissions ORDER BY id DESC LIMIT ? OFFSET ?', [limit, offset], (err, rows) => {
+      if (err) {
+        console.error('Error fetching submissions:', err);
+        return res.status(500).json({ success: false, error: 'Database error' });
       }
-    );
+      
+      // Process multiSelect values
+      rows.forEach(row => {
+        if (row.multiSelect) {
+          try {
+            row.multiSelect = JSON.parse(row.multiSelect);
+          } catch (e) {
+            row.multiSelect = row.multiSelect.split(',');
+          }
+        }
+      });
+      
+      res.json({
+        success: true,
+        submissions: rows,
+        pagination: {
+          total,
+          page,
+          limit,
+          pages
+        }
+      });
+    });
   });
 });
 
 // Delete submission
-app.delete('/admin/submission/:id', authenticateToken, (req, res) => {
-  const { id } = req.params;
+app.delete('/admin/submissions/:id', authenticateToken, (req, res) => {
+  const id = req.params.id;
   
-  // Get file info first to delete file if exists
-  db.get("SELECT file FROM submissions WHERE id = ?", [id], (err, row) => {
+  // Get file info before deleting
+  db.get('SELECT file FROM submissions WHERE id = ?', [id], (err, row) => {
     if (err) {
-      console.error("Database error:", err);
-      return res.status(500).json({ success: false, message: 'Database error' });
+      console.error('Error retrieving submission file:', err);
+      return res.status(500).json({ success: false, error: 'Database error' });
     }
     
-    // Delete from database
-    db.run("DELETE FROM submissions WHERE id = ?", [id], function(err) {
+    // Delete record from database
+    db.run('DELETE FROM submissions WHERE id = ?', [id], function(err) {
       if (err) {
-        console.error("Database error:", err);
-        return res.status(500).json({ success: false, message: 'Database error' });
+        console.error('Error deleting submission:', err);
+        return res.status(500).json({ success: false, error: 'Database error' });
       }
       
+      // If no rows were affected
       if (this.changes === 0) {
-        return res.status(404).json({ success: false, message: 'Submission not found' });
+        return res.status(404).json({ success: false, error: 'Submission not found' });
       }
       
-      // Delete file if exists
+      // Delete associated file if exists
       if (row && row.file) {
-        const filePath = path.join(uploadDir, row.file);
-        fs.unlink(filePath, (err) => {
-          if (err) console.error("Error deleting file:", err);
-        });
+        const filePath = path.join(uploadsDir, row.file);
+        if (fs.existsSync(filePath)) {
+          fs.unlink(filePath, (err) => {
+            if (err) console.error('Error deleting file:', err);
+          });
+        }
       }
       
       res.json({ success: true, message: 'Submission deleted successfully' });
@@ -326,8 +220,116 @@ app.delete('/admin/submission/:id', authenticateToken, (req, res) => {
   });
 });
 
+// Export submissions as CSV
+app.get('/admin/export-csv', authenticateToken, (req, res) => {
+  db.all('SELECT * FROM submissions ORDER BY id DESC', [], (err, rows) => {
+    if (err) {
+      console.error('Error fetching submissions for CSV:', err);
+      return res.status(500).json({ success: false, error: 'Database error' });
+    }
+    
+    // Convert to CSV
+    let csv = '';
+    
+    // Get all possible headers
+    const headers = new Set();
+    rows.forEach(row => {
+      Object.keys(row).forEach(key => headers.add(key));
+    });
+    
+    // Create header row
+    csv += Array.from(headers).join(',') + '\n';
+    
+    // Add data rows
+    rows.forEach(row => {
+      const values = Array.from(headers).map(header => {
+        let value = row[header] !== undefined && row[header] !== null ? row[header] : '';
+        
+        // Handle arrays
+        if (header === 'multiSelect' && value) {
+          try {
+            value = JSON.parse(value);
+            if (Array.isArray(value)) {
+              value = value.join(';');
+            }
+          } catch (e) {
+            // If already a string, leave as is
+          }
+        }
+        
+        // Escape quotes and wrap in quotes
+        value = String(value).replace(/"/g, '""');
+        return `"${value}"`;
+      });
+      
+      csv += values.join(',') + '\n';
+    });
+    
+    // Send CSV response
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename=submissions_${new Date().toISOString().slice(0,10)}.csv`);
+    res.send(csv);
+  });
+});
+
+// Submit form
+app.post('/submit-form', upload.single('upload'), (req, res) => {
+  try {
+    const formData = req.body;
+    
+    // Process multiSelect values (arrays)
+    let multiSelect = formData.multiSelect;
+    if (multiSelect) {
+      if (!Array.isArray(multiSelect)) {
+        multiSelect = [multiSelect];
+      }
+      multiSelect = JSON.stringify(multiSelect);
+    }
+    
+    // Handle file upload
+    const file = req.file ? req.file.filename : null;
+    
+    // Prepare data for insertion
+    const data = {
+      shortAnswer: formData.shortAnswer,
+      longAnswer: formData.longAnswer,
+      multiSelect: multiSelect,
+      singleSelect: formData.singleSelect,
+      date: formData.date,
+      time: formData.time,
+      phone: formData.phone,
+      email: formData.email,
+      number: formData.number,
+      website: formData.website,
+      scale: formData.scale,
+      dropdown: formData.dropdown,
+      file: file
+    };
+    
+    // Insert into database
+    const placeholders = Object.keys(data).map(() => '?').join(',');
+    const columns = Object.keys(data).join(',');
+    const values = Object.values(data);
+    
+    const sql = `INSERT INTO submissions (${columns}) VALUES (${placeholders})`;
+    
+    db.run(sql, values, function(err) {
+      if (err) {
+        console.error('Error saving submission:', err);
+        return res.status(500).json({ success: false, message: 'Error saving your submission' });
+      }
+      
+      res.json({ success: true, message: 'Form submitted successfully!', id: this.lastID });
+    });
+  } catch (error) {
+    console.error('Form submission error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 // Start server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-  console.log(`Open http://localhost:${PORT} in your browser`);
+  console.log(`Admin panel available at http://localhost:${PORT}/admin`);
 });
+
