@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Literature Survey - Form Template</title>
+  <link rel="stylesheet" href="../styles-enhanced.css">
+  <style>
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: white;
+      text-decoration: none;
+      padding: 8px 16px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 8px;
+      margin-bottom: 20px;
+      transition: all 0.3s;
+    }
+    .back-link:hover {
+      background: rgba(255,255,255,0.3);
+    }
+  </style>
+</head>
+<body>
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container" role="status" aria-live="polite"></div>
+
+  <div class="form-container">
+    <a href="/" class="back-link">← Back to Templates</a>
+    
+    <div class="form-header">
+      <h1>📚 Literature Survey</h1>
+      <p class="form-subtitle">Document literature review findings and key research papers</p>
+      
+      <!-- Progress Indicator -->
+      <div class="progress-wrapper">
+        <div class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <span class="progress-text" id="progressText">0% Complete</span>
+      </div>
+    </div>
+
+    <!-- Draft Status -->
+    <div id="draftStatus" class="draft-status">
+      <span class="draft-icon">💾</span>
+      <span id="draftText">Draft auto-saved</span>
+    </div>
+
+    <form id="mainForm" enctype="multipart/form-data" novalidate>
+      
+      <!-- Reviewer Information -->
+      <fieldset class="form-group">
+        <legend>Reviewer Information</legend>
+        
+        <div class="form-group">
+          <label for="reviewerName">
+            Reviewer Name
+            <span class="required">*</span>
+          </label>
+          <input 
+            type="text" 
+            name="reviewerName" 
+            id="reviewerName" 
+            required 
+            placeholder="Enter your full name"
+            aria-describedby="reviewerNameError" 
+          />
+          <small id="reviewerNameError" class="error-message"></small>
+        </div>
+
+        <div class="form-group">
+          <label for="reviewDate">
+            Review Date
+            <span class="required">*</span>
+          </label>
+          <input 
+            type="date" 
+            name="reviewDate" 
+            id="reviewDate" 
+            required 
+            aria-describedby="reviewDateError" 
+          />
+          <small id="reviewDateError" class="error-message"></small>
+        </div>
+      </fieldset>
+
+      <!-- Paper Details -->
+      <fieldset class="form-group">
+        <legend>Paper/Article Details</legend>
+        
+        <div class="form-group">
+          <label for="title">
+            Title
+            <span class="required">*</span>
+          </label>
+          <input 
+            type="text" 
+            name="title" 
+            id="title" 
+            required 
+            maxlength="500"
+            placeholder="Enter the paper/article title"
+            aria-describedby="titleError titleCounter" 
+          />
+          <div class="field-footer">
+            <small id="titleError" class="error-message"></small>
+            <small id="titleCounter" class="char-counter">0 / 500</small>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="authors">
+            Author(s)
+            <span class="required">*</span>
+          </label>
+          <input 
+            type="text" 
+            name="authors" 
+            id="authors" 
+            required 
+            placeholder="e.g., Smith, J., Doe, A., et al."
+            aria-describedby="authorsError" 
+          />
+          <small id="authorsError" class="error-message"></small>
+        </div>
+
+        <div class="form-group">
+          <label for="publicationYear">
+            Publication Year
+            <span class="required">*</span>
+          </label>
+          <input 
+            type="number" 
+            name="publicationYear" 
+            id="publicationYear" 
+            required 
+            min="1900"
+            max="2099"
+            placeholder="YYYY"
+            aria-describedby="publicationYearError" 
+          />
+          <small id="publicationYearError" class="error-message"></small>
+        </div>
+
+        <div class="form-group">
+          <label for="journal">
+            Journal/Conference
+            <span class="required">*</span>
+          </label>
+          <input 
+            type="text" 
+            name="journal" 
+            id="journal" 
+            required 
+            placeholder="Enter journal or conference name"
+            aria-describedby="journalError" 
+          />
+          <small id="journalError" class="error-message"></small>
+        </div>
+
+        <div class="form-group">
+          <label for="doi">
+            DOI or URL
+            <span class="optional">(Optional)</span>
+          </label>
+          <input 
+            type="url" 
+            name="doi" 
+            id="doi" 
+            placeholder="https://doi.org/... or article URL"
+            aria-describedby="doiError" 
+          />
+          <small id="doiError" class="error-message"></small>
+        </div>
+      </fieldset>
+
+      <!-- Citation -->
+      <div class="form-group">
+        <label for="citation">
+          Full Citation
+          <span class="required">*</span>
+        </label>
+        <textarea 
+          name="citation" 
+          id="citation" 
+          rows="3" 
+          maxlength="1000"
+          required 
+          placeholder="Paste or type the full formatted citation (APA, MLA, etc.)"
+          aria-describedby="citationError citationCounter"
+        ></textarea>
+        <div class="field-footer">
+          <small id="citationError" class="error-message"></small>
+          <small id="citationCounter" class="char-counter">0 / 1000</small>
+        </div>
+      </div>
+
+      <!-- Research Area -->
+      <fieldset class="form-group">
+        <legend>Research Area</legend>
+        
+        <div class="form-group">
+          <label for="researchField">
+            Primary Research Field
+            <span class="required">*</span>
+          </label>
+          <select name="researchField" id="researchField" required aria-describedby="researchFieldError">
+            <option value="">Select field...</option>
+            <option value="Computer Science">Computer Science</option>
+            <option value="Engineering">Engineering</option>
+            <option value="Medicine">Medicine</option>
+            <option value="Physics">Physics</option>
+            <option value="Chemistry">Chemistry</option>
+            <option value="Biology">Biology</option>
+            <option value="Mathematics">Mathematics</option>
+            <option value="Social Sciences">Social Sciences</option>
+            <option value="Environmental Science">Environmental Science</option>
+            <option value="Psychology">Psychology</option>
+            <option value="Business">Business</option>
+            <option value="Education">Education</option>
+            <option value="Other">Other</option>
+          </select>
+          <small id="researchFieldError" class="error-message"></small>
+        </div>
+
+        <div class="form-group">
+          <label for="keywords">
+            Keywords / Tags
+            <span class="optional">(Optional)</span>
+          </label>
+          <input 
+            type="text" 
+            name="keywords" 
+            id="keywords" 
+            placeholder="machine learning, neural networks, deep learning..."
+          />
+        </div>
+      </fieldset>
+
+      <!-- Summary -->
+      <div class="form-group">
+        <label for="summary">
+          Summary / Abstract
+          <span class="required">*</span>
+        </label>
+        <textarea 
+          name="summary" 
+          id="summary" 
+          rows="6" 
+          maxlength="5000"
+          required 
+          placeholder="Provide a brief summary of the paper's content and main arguments..."
+          aria-describedby="summaryError summaryCounter"
+        ></textarea>
+        <div class="field-footer">
+          <small id="summaryError" class="error-message"></small>
+          <small id="summaryCounter" class="char-counter">0 / 5000</small>
+        </div>
+      </div>
+
+      <!-- Methodology -->
+      <div class="form-group">
+        <label for="methodology">
+          Methodology
+          <span class="required">*</span>
+        </label>
+        <textarea 
+          name="methodology" 
+          id="methodology" 
+          rows="5" 
+          maxlength="3000"
+          required 
+          placeholder="Describe the research methodology, approach, and methods used..."
+          aria-describedby="methodologyError methodologyCounter"
+        ></textarea>
+        <div class="field-footer">
+          <small id="methodologyError" class="error-message"></small>
+          <small id="methodologyCounter" class="char-counter">0 / 3000</small>
+        </div>
+      </div>
+
+      <!-- Key Findings -->
+      <div class="form-group">
+        <label for="keyFindings">
+          Key Findings / Results
+          <span class="required">*</span>
+        </label>
+        <textarea 
+          name="keyFindings" 
+          id="keyFindings" 
+          rows="6" 
+          maxlength="5000"
+          required 
+          placeholder="Summarize the key findings, results, and conclusions..."
+          aria-describedby="keyFindingsError keyFindingsCounter"
+        ></textarea>
+        <div class="field-footer">
+          <small id="keyFindingsError" class="error-message"></small>
+          <small id="keyFindingsCounter" class="char-counter">0 / 5000</small>
+        </div>
+      </div>
+
+      <!-- Strengths and Limitations -->
+      <div class="form-group">
+        <label for="strengths">
+          Strengths
+          <span class="optional">(Optional)</span>
+        </label>
+        <textarea 
+          name="strengths" 
+          id="strengths" 
+          rows="3"
+          maxlength="2000"
+          placeholder="What are the paper's strengths?..."
+          aria-describedby="strengthsCounter"
+        ></textarea>
+        <div class="field-footer">
+          <small class="error-message"></small>
+          <small id="strengthsCounter" class="char-counter">0 / 2000</small>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="limitations">
+          Limitations
+          <span class="optional">(Optional)</span>
+        </label>
+        <textarea 
+          name="limitations" 
+          id="limitations" 
+          rows="3"
+          maxlength="2000"
+          placeholder="What are the limitations or weaknesses?..."
+          aria-describedby="limitationsCounter"
+        ></textarea>
+        <div class="field-footer">
+          <small class="error-message"></small>
+          <small id="limitationsCounter" class="char-counter">0 / 2000</small>
+        </div>
+      </div>
+
+      <!-- Relevance Rating -->
+      <div class="form-group">
+        <label>
+          Relevance to Your Research
+          <span class="required">*</span>
+        </label>
+        <div class="rating-scale" role="radiogroup" aria-label="Relevance Rating" aria-describedby="scaleError">
+          <label class="rating-option" data-value="1" title="Not Relevant">
+            <input type="radio" name="relevance" value="1" required />
+            <span class="rating-emoji">⭐</span>
+            <span class="rating-number">1</span>
+          </label>
+          <label class="rating-option" data-value="2" title="Slightly Relevant">
+            <input type="radio" name="relevance" value="2" />
+            <span class="rating-emoji">⭐⭐</span>
+            <span class="rating-number">2</span>
+          </label>
+          <label class="rating-option" data-value="3" title="Moderately Relevant">
+            <input type="radio" name="relevance" value="3" />
+            <span class="rating-emoji">⭐⭐⭐</span>
+            <span class="rating-number">3</span>
+          </label>
+          <label class="rating-option" data-value="4" title="Highly Relevant">
+            <input type="radio" name="relevance" value="4" />
+            <span class="rating-emoji">⭐⭐⭐⭐</span>
+            <span class="rating-number">4</span>
+          </label>
+          <label class="rating-option" data-value="5" title="Extremely Relevant">
+            <input type="radio" name="relevance" value="5" />
+            <span class="rating-emoji">⭐⭐⭐⭐⭐</span>
+            <span class="rating-number">5</span>
+          </label>
+        </div>
+        <small id="scaleError" class="error-message"></small>
+      </div>
+
+      <!-- Personal Notes -->
+      <div class="form-group">
+        <label for="personalNotes">
+          Personal Notes / Comments
+          <span class="optional">(Optional)</span>
+        </label>
+        <textarea 
+          name="personalNotes" 
+          id="personalNotes" 
+          rows="4"
+          maxlength="3000"
+          placeholder="Your personal thoughts, how this relates to your work, future directions..."
+          aria-describedby="personalNotesCounter"
+        ></textarea>
+        <div class="field-footer">
+          <small class="error-message"></small>
+          <small id="personalNotesCounter" class="char-counter">0 / 3000</small>
+        </div>
+      </div>
+
+      <!-- Attach Paper -->
+      <div class="form-group">
+        <label for="paperFile">
+          Attach Paper (PDF)
+          <span class="optional">(Optional, Max 10MB)</span>
+        </label>
+        <div class="file-upload-wrapper">
+          <input 
+            type="file" 
+            name="paperFile" 
+            id="paperFile" 
+            accept=".pdf"
+            aria-describedby="paperFileError" 
+          />
+          <label for="paperFile" class="file-upload-label">
+            <span class="file-upload-icon">📄</span>
+            <span class="file-upload-text">Choose PDF or drag here</span>
+            <span class="file-upload-subtext">PDF only (Max 10MB)</span>
+          </label>
+          <div id="filePreview" class="file-preview"></div>
+        </div>
+        <small id="paperFileError" class="error-message"></small>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="form-actions">
+        <button type="button" id="clearDraftBtn" class="btn btn-secondary">
+          Clear Draft
+        </button>
+        <button type="submit" id="submitBtn" class="btn btn-primary">
+          <span class="btn-text">Submit Literature Review</span>
+          <span class="btn-loader"></span>
+        </button>
+      </div>
+    </form>
+
+    <!-- Success Message -->
+    <div id="successMessage" class="success-message" role="alert" aria-live="assertive">
+      <div class="success-icon">✓</div>
+      <h2>Literature Review Submitted Successfully!</h2>
+      <p>Your literature review entry has been recorded. Thank you for your submission.</p>
+      <button type="button" id="submitAnotherBtn" class="btn btn-primary">Submit Another Review</button>
+    </div>
+  </div>
+
+  <script src="../script-enhanced.js"></script>
+</body>
+</html>

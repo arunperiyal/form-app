@@ -1,129 +1,271 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Flexible Form</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Form Templates - Flexible Form System</title>
+  <link rel="stylesheet" href="home.css">
 </head>
 <body>
-  <div class="form-container">
-    <h1>Custom Form</h1>
-    <form id="mainForm" enctype="multipart/form-data" novalidate>
-      
-      <div class="form-group">
-        <label for="shortAnswer">Short Answer:</label>
-        <input type="text" name="shortAnswer" id="shortAnswer" pattern=".{3,}" required aria-describedby="shortAnswerError" />
-        <small id="shortAnswerError" class="error-message">At least 3 characters required.</small>
-      </div>
-
-      <div class="form-group">
-        <label for="longAnswer">Long Answer:</label>
-        <textarea name="longAnswer" id="longAnswer" rows="4" required aria-describedby="longAnswerError"></textarea>
-        <small id="longAnswerError" class="error-message">This field is required.</small>
-      </div>
-
-      <fieldset class="form-group">
-        <legend>Checkbox Options:</legend>
-        <label><input type="checkbox" name="multiSelect[]" value="Option A" /> Option A</label>
-        <label><input type="checkbox" name="multiSelect[]" value="Option B" /> Option B</label>
-      </fieldset>
-
-      <fieldset class="form-group">
-        <legend>Radio Options:</legend>
-        <label><input type="radio" name="singleSelect" value="Yes" required aria-describedby="singleSelectError" /> Yes</label>
-        <label><input type="radio" name="singleSelect" value="No" /> No</label>
-        <small id="singleSelectError" class="error-message">Please select an option.</small>
-      </fieldset>
-      
-      <div class="form-group">
-        <label for="date">Date:</label>
-        <input type="date" id="date" name="date" required aria-describedby="dateError" />
-        <small id="dateError" class="error-message">Please select a date.</small>
-      </div>
-
-      <div class="form-group">
-        <label for="time">Time:</label>
-        <input type="time" id="time" name="time" required aria-describedby="timeError" />
-        <small id="timeError" class="error-message">Please select a time.</small>
-      </div>
-
-      <div class="form-group">
-        <label for="phone">Phone Number:</label>
-        <input type="tel" id="phone" name="phone" pattern="^\+?\d{10,15}$" required aria-describedby="phoneError" />
-        <small id="phoneError" class="error-message">Enter a valid phone number (10–15 digits).</small>
-      </div>
-
-      <div class="form-group">
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email" required aria-describedby="emailError" />
-        <small id="emailError" class="error-message">Enter a valid email address.</small>
-      </div>
-
-      <div class="form-group">
-        <label for="number">Quantity:</label>
-        <input type="number" id="number" name="number" min="0" max="100" aria-describedby="numberError" />
-        <small id="numberError" class="error-message">Enter a number between 0 and 100.</small>
-      </div>
-
-      <div class="form-group">
-        <label for="website">Website URL:</label>
-        <input type="url" id="website" name="website" aria-describedby="websiteError" />
-        <small id="websiteError" class="error-message">Enter a valid URL (including http:// or https://).</small>
-      </div>
-      
-      <div class="form-group">
-        <label>Rate your satisfaction:</label>
-        <div class="radio-scale" role="radiogroup" aria-labelledby="satisfactionLabel" aria-describedby="scaleError">
-          <span id="satisfactionLabel" class="visually-hidden">Satisfaction Rating</span>
-          <label class="scale-option red">
-            <input type="radio" name="scale" value="1" required />
-            <span>1</span>
-          </label>
-          <label class="scale-option orange">
-            <input type="radio" name="scale" value="2" />
-            <span>2</span>
-          </label>
-          <label class="scale-option yellow">
-            <input type="radio" name="scale" value="3" />
-            <span>3</span>
-          </label>
-          <label class="scale-option lightgreen">
-            <input type="radio" name="scale" value="4" />
-            <span>4</span>
-          </label>
-          <label class="scale-option green">
-            <input type="radio" name="scale" value="5" />
-            <span>5</span>
-          </label>
+  <div class="hero-section">
+    <div class="container">
+      <header class="header">
+        <div class="logo">
+          <span class="logo-icon">📝</span>
+          <span class="logo-text">FlexForm</span>
         </div>
-        <small id="scaleError" class="error-message">Please select a rating.</small>
+        <nav class="nav">
+          <a href="#templates" class="nav-link">Templates</a>
+          <a href="#stats" class="nav-link">Stats</a>
+          <a href="/admin" class="nav-link nav-link-admin">Admin</a>
+        </nav>
+      </header>
+
+      <div class="hero-content">
+        <h1 class="hero-title">
+          Flexible Form System
+          <span class="hero-subtitle">Choose a Template to Get Started</span>
+        </h1>
+        <p class="hero-description">
+          Select from our pre-built form templates designed for various data collection needs. Each template includes relevant fields and validation.
+        </p>
       </div>
-
-      <div class="form-group">
-        <label for="dropdown">Dropdown:</label>
-        <select name="dropdown" id="dropdown" required aria-describedby="dropdownError">
-          <option value="">Choose...</option>
-          <option value="Alpha">Alpha</option>
-          <option value="Beta">Beta</option>
-        </select>
-        <small id="dropdownError" class="error-message">Please select an option.</small>
-      </div>
-
-      <div class="form-group">
-        <label for="upload">File Upload (Max 1MB):</label>
-        <input type="file" name="upload" id="upload" accept=".pdf,.jpg,.png" aria-describedby="uploadError" />
-        <small id="uploadError" class="error-message">File must be PDF, JPG, or PNG and under 1MB.</small>
-      </div>
-
-      <button type="submit">Submit</button>
-    </form>
-
-    <div id="progressBarContainer" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-      <div id="progressBar"></div>
     </div>
   </div>
 
-  <script src="script.js"></script>
+  <!-- Templates Section -->
+  <section id="templates" class="templates-section">
+    <div class="container">
+      <h2 class="section-title">Form Templates</h2>
+      <p class="section-subtitle">Select a template that best fits your needs</p>
+      
+      <div class="templates-grid">
+        
+        <!-- Field Data Collection Template -->
+        <div class="template-card">
+          <div class="template-header">
+            <div class="template-icon">🔬</div>
+            <h3 class="template-title">Field Data Collection</h3>
+          </div>
+          <p class="template-description">
+            Collect field research data including location, observations, measurements, and samples.
+          </p>
+          <div class="template-fields">
+            <span class="field-badge">Location</span>
+            <span class="field-badge">Date/Time</span>
+            <span class="field-badge">Observations</span>
+            <span class="field-badge">Measurements</span>
+            <span class="field-badge">Photos</span>
+          </div>
+          <a href="/templates/field-data.html" class="btn btn-primary btn-block">
+            Use This Template
+          </a>
+        </div>
+
+        <!-- Literature Survey Template -->
+        <div class="template-card">
+          <div class="template-header">
+            <div class="template-icon">📚</div>
+            <h3 class="template-title">Literature Survey</h3>
+          </div>
+          <p class="template-description">
+            Document literature review findings including citation, summary, methodology, and key findings.
+          </p>
+          <div class="template-fields">
+            <span class="field-badge">Citation</span>
+            <span class="field-badge">Authors</span>
+            <span class="field-badge">Year</span>
+            <span class="field-badge">Summary</span>
+            <span class="field-badge">Key Findings</span>
+          </div>
+          <a href="/templates/literature-survey.html" class="btn btn-primary btn-block">
+            Use This Template
+          </a>
+        </div>
+
+        <!-- Event Registration Template -->
+        <div class="template-card">
+          <div class="template-header">
+            <div class="template-icon">🎟️</div>
+            <h3 class="template-title">Event Registration</h3>
+          </div>
+          <p class="template-description">
+            Register participants for events, workshops, or conferences with contact and preference details.
+          </p>
+          <div class="template-fields">
+            <span class="field-badge">Name</span>
+            <span class="field-badge">Email</span>
+            <span class="field-badge">Phone</span>
+            <span class="field-badge">Organization</span>
+            <span class="field-badge">Preferences</span>
+          </div>
+          <a href="/templates/event-registration.html" class="btn btn-primary btn-block">
+            Use This Template
+          </a>
+        </div>
+
+        <!-- Customer Feedback Template -->
+        <div class="template-card">
+          <div class="template-header">
+            <div class="template-icon">💬</div>
+            <h3 class="template-title">Customer Feedback</h3>
+          </div>
+          <p class="template-description">
+            Collect customer feedback and satisfaction ratings with comments and suggestions.
+          </p>
+          <div class="template-fields">
+            <span class="field-badge">Rating</span>
+            <span class="field-badge">Experience</span>
+            <span class="field-badge">Comments</span>
+            <span class="field-badge">Suggestions</span>
+            <span class="field-badge">Contact</span>
+          </div>
+          <a href="/templates/customer-feedback.html" class="btn btn-primary btn-block">
+            Use This Template
+          </a>
+        </div>
+
+        <!-- Survey Questionnaire Template -->
+        <div class="template-card">
+          <div class="template-header">
+            <div class="template-icon">📊</div>
+            <h3 class="template-title">Survey Questionnaire</h3>
+          </div>
+          <p class="template-description">
+            General-purpose survey with multiple question types including multiple choice and ratings.
+          </p>
+          <div class="template-fields">
+            <span class="field-badge">Demographics</span>
+            <span class="field-badge">Multiple Choice</span>
+            <span class="field-badge">Ratings</span>
+            <span class="field-badge">Text Response</span>
+            <span class="field-badge">Optional Info</span>
+          </div>
+          <a href="/templates/survey.html" class="btn btn-primary btn-block">
+            Use This Template
+          </a>
+        </div>
+
+        <!-- Contact Form Template -->
+        <div class="template-card">
+          <div class="template-header">
+            <div class="template-icon">✉️</div>
+            <h3 class="template-title">Contact / Inquiry</h3>
+          </div>
+          <p class="template-description">
+            Simple contact form for inquiries, support requests, or general communication.
+          </p>
+          <div class="template-fields">
+            <span class="field-badge">Name</span>
+            <span class="field-badge">Email</span>
+            <span class="field-badge">Subject</span>
+            <span class="field-badge">Message</span>
+            <span class="field-badge">Attachment</span>
+          </div>
+          <a href="/templates/contact.html" class="btn btn-primary btn-block">
+            Use This Template
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats Section -->
+  <section id="stats" class="stats-section">
+    <div class="container">
+      <h2 class="section-title">System Information</h2>
+      <div class="stats-grid">
+        
+        <div class="stat-card">
+          <div class="stat-icon">🎨</div>
+          <div class="stat-value" id="statVersion">v2.3.0</div>
+          <div class="stat-label">Version</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">📝</div>
+          <div class="stat-value">6</div>
+          <div class="stat-label">Templates Available</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">⚡</div>
+          <div class="stat-value" id="statUptime">Loading...</div>
+          <div class="stat-label">Server Uptime</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">✅</div>
+          <div class="stat-value" id="statStatus">Healthy</div>
+          <div class="stat-label">System Status</div>
+        </div>
+
+      </div>
+
+      <!-- Tech Stack -->
+      <div class="tech-stack">
+        <h3 class="tech-title">Built With</h3>
+        <div class="tech-badges">
+          <span class="tech-badge">Node.js</span>
+          <span class="tech-badge">Express</span>
+          <span class="tech-badge">SQLite</span>
+          <span class="tech-badge">Helmet</span>
+          <span class="tech-badge">Winston</span>
+          <span class="tech-badge">JWT</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h4 class="footer-title">Flexible Form System</h4>
+          <p class="footer-description">
+            A production-ready form management system with pre-built templates for various data collection needs.
+          </p>
+        </div>
+        
+        <div class="footer-section">
+          <h4 class="footer-title">Templates</h4>
+          <ul class="footer-links">
+            <li><a href="/templates/field-data.html">Field Data Collection</a></li>
+            <li><a href="/templates/literature-survey.html">Literature Survey</a></li>
+            <li><a href="/templates/event-registration.html">Event Registration</a></li>
+            <li><a href="/templates/customer-feedback.html">Customer Feedback</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-section">
+          <h4 class="footer-title">Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="#templates">All Templates</a></li>
+            <li><a href="/admin">Admin Panel</a></li>
+            <li><a href="/health">Health Check</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-section">
+          <h4 class="footer-title">Features</h4>
+          <ul class="footer-links">
+            <li>Auto-save & Drafts</li>
+            <li>Real-time Validation</li>
+            <li>Progress Tracking</li>
+            <li>Secure & Fast</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>&copy; 2024 Flexible Form System. Production Ready v2.3.0</p>
+        <p class="footer-made">Made with ❤️ for efficient data collection</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="home.js"></script>
 </body>
 </html>

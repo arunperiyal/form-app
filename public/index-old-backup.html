@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flexible Form System - Home</title>
+  <link rel="stylesheet" href="home.css">
+</head>
+<body>
+  <div class="hero-section">
+    <div class="container">
+      <header class="header">
+        <div class="logo">
+          <span class="logo-icon">📝</span>
+          <span class="logo-text">FlexForm</span>
+        </div>
+        <nav class="nav">
+          <a href="#features" class="nav-link">Features</a>
+          <a href="#stats" class="nav-link">Stats</a>
+          <a href="/admin" class="nav-link nav-link-admin">Admin</a>
+        </nav>
+      </header>
+
+      <div class="hero-content">
+        <h1 class="hero-title">
+          Flexible Form System
+          <span class="hero-subtitle">Collect, Manage, and Analyze Responses</span>
+        </h1>
+        <p class="hero-description">
+          A modern, secure, and feature-rich form management system built with enterprise-grade security and beautiful UI/UX.
+        </p>
+        <div class="hero-buttons">
+          <a href="/form-enhanced.html" class="btn btn-primary btn-large">
+            <span class="btn-icon">✨</span>
+            Fill Enhanced Form
+          </a>
+          <a href="/form.html" class="btn btn-secondary btn-large">
+            <span class="btn-icon">📋</span>
+            Classic Form
+          </a>
+        </div>
+        <div class="hero-note">
+          <span class="note-icon">💡</span>
+          <span>Enhanced form includes auto-save, progress tracking, and drag & drop uploads</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Features Section -->
+  <section id="features" class="features-section">
+    <div class="container">
+      <h2 class="section-title">Key Features</h2>
+      <div class="features-grid">
+        
+        <div class="feature-card">
+          <div class="feature-icon">🔒</div>
+          <h3 class="feature-title">Enterprise Security</h3>
+          <p class="feature-description">
+            Helmet.js security headers, rate limiting, input validation, and XSS protection
+          </p>
+          <ul class="feature-list">
+            <li>JWT authentication</li>
+            <li>Rate limiting (100/15min)</li>
+            <li>Input sanitization</li>
+          </ul>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">💾</div>
+          <h3 class="feature-title">Auto-Save Drafts</h3>
+          <p class="feature-description">
+            Never lose your progress with automatic draft saving every second
+          </p>
+          <ul class="feature-list">
+            <li>LocalStorage persistence</li>
+            <li>Survives page refresh</li>
+            <li>Clear draft option</li>
+          </ul>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📊</div>
+          <h3 class="feature-title">Real-Time Progress</h3>
+          <p class="feature-description">
+            Visual progress bar shows completion percentage as you fill the form
+          </p>
+          <ul class="feature-list">
+            <li>Live updates</li>
+            <li>Percentage indicator</li>
+            <li>Smooth animations</li>
+          </ul>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">✓</div>
+          <h3 class="feature-title">Smart Validation</h3>
+          <p class="feature-description">
+            Real-time validation with inline error messages and helpful feedback
+          </p>
+          <ul class="feature-list">
+            <li>Client & server validation</li>
+            <li>Custom error messages</li>
+            <li>Visual indicators</li>
+          </ul>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📁</div>
+          <h3 class="feature-title">Drag & Drop Upload</h3>
+          <p class="feature-description">
+            Modern file upload with drag and drop, preview, and size validation
+          </p>
+          <ul class="feature-list">
+            <li>Drag & drop support</li>
+            <li>File preview</li>
+            <li>Type validation</li>
+          </ul>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📱</div>
+          <h3 class="feature-title">Mobile Responsive</h3>
+          <p class="feature-description">
+            Fully optimized for mobile devices with touch-friendly controls
+          </p>
+          <ul class="feature-list">
+            <li>Responsive design</li>
+            <li>Touch optimized</li>
+            <li>All screen sizes</li>
+          </ul>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🍞</div>
+          <h3 class="feature-title">Toast Notifications</h3>
+          <p class="feature-description">
+            Beautiful, non-intrusive notifications for success, errors, and info
+          </p>
+          <ul class="feature-list">
+            <li>Auto-dismiss</li>
+            <li>4 types of toasts</li>
+            <li>Smooth animations</li>
+          </ul>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📈</div>
+          <h3 class="feature-title">Admin Dashboard</h3>
+          <p class="feature-description">
+            Powerful admin panel to view, manage, and export form responses
+          </p>
+          <ul class="feature-list">
+            <li>View submissions</li>
+            <li>Export to CSV</li>
+            <li>Delete responses</li>
+          </ul>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📝</div>
+          <h3 class="feature-title">Winston Logging</h3>
+          <p class="feature-description">
+            Professional logging system with automatic rotation and error tracking
+          </p>
+          <ul class="feature-list">
+            <li>Structured logs</li>
+            <li>Auto rotation</li>
+            <li>Error tracking</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats Section -->
+  <section id="stats" class="stats-section">
+    <div class="container">
+      <h2 class="section-title">System Information</h2>
+      <div class="stats-grid">
+        
+        <div class="stat-card">
+          <div class="stat-icon">🎨</div>
+          <div class="stat-value" id="statVersion">v2.2.0</div>
+          <div class="stat-label">Version</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">🔐</div>
+          <div class="stat-value">9/10</div>
+          <div class="stat-label">Security Score</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">⚡</div>
+          <div class="stat-value" id="statUptime">Loading...</div>
+          <div class="stat-label">Server Uptime</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">✅</div>
+          <div class="stat-value" id="statStatus">Healthy</div>
+          <div class="stat-label">System Status</div>
+        </div>
+
+      </div>
+
+      <!-- Tech Stack -->
+      <div class="tech-stack">
+        <h3 class="tech-title">Built With</h3>
+        <div class="tech-badges">
+          <span class="tech-badge">Node.js</span>
+          <span class="tech-badge">Express</span>
+          <span class="tech-badge">SQLite</span>
+          <span class="tech-badge">Helmet</span>
+          <span class="tech-badge">Winston</span>
+          <span class="tech-badge">JWT</span>
+          <span class="tech-badge">Rate Limit</span>
+          <span class="tech-badge">Express Validator</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h4 class="footer-title">Flexible Form System</h4>
+          <p class="footer-description">
+            A production-ready form management system with enterprise-grade security and modern UI/UX.
+          </p>
+        </div>
+        
+        <div class="footer-section">
+          <h4 class="footer-title">Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="/form-enhanced.html">Enhanced Form</a></li>
+            <li><a href="/form.html">Classic Form</a></li>
+            <li><a href="/admin">Admin Panel</a></li>
+            <li><a href="/health">Health Check</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-section">
+          <h4 class="footer-title">Features</h4>
+          <ul class="footer-links">
+            <li>Auto-save & Drafts</li>
+            <li>Real-time Validation</li>
+            <li>Progress Tracking</li>
+            <li>Toast Notifications</li>
+          </ul>
+        </div>
+
+        <div class="footer-section">
+          <h4 class="footer-title">Documentation</h4>
+          <ul class="footer-links">
+            <li><a href="#" onclick="alert('Check docs/ folder')">API Docs</a></li>
+            <li><a href="#" onclick="alert('Check README.md')">User Guide</a></li>
+            <li><a href="#" onclick="alert('Check docs/CODE_IMPROVEMENTS.md')">Improvements</a></li>
+            <li><a href="#" onclick="alert('npm test')">Run Tests</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>&copy; 2024 Flexible Form System. Production Ready v2.2.0</p>
+        <p class="footer-made">Made with ❤️ for secure and maintainable applications</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="home.js"></script>
+</body>
+</html>

@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Survey Questionnaire - Form Template</title>
+  <link rel="stylesheet" href="../styles-enhanced.css">
+  <style>
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: white;
+      text-decoration: none;
+      padding: 8px 16px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 8px;
+      margin-bottom: 20px;
+      transition: all 0.3s;
+    }
+    .back-link:hover {
+      background: rgba(255,255,255,0.3);
+    }
+  </style>
+</head>
+<body>
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container" role="status" aria-live="polite"></div>
+
+  <div class="form-container">
+    <a href="/" class="back-link">← Back to Templates</a>
+    
+    <div class="form-header">
+      <h1>📊 Survey Questionnaire</h1>
+      <p class="form-subtitle">General-purpose survey with multiple question types</p>
+      
+      <!-- Progress Indicator -->
+      <div class="progress-wrapper">
+        <div class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <span class="progress-text" id="progressText">0% Complete</span>
+      </div>
+    </div>
+
+    <!-- Draft Status -->
+    <div id="draftStatus" class="draft-status">
+      <span class="draft-icon">💾</span>
+      <span id="draftText">Draft auto-saved</span>
+    </div>
+
+    <form id="mainForm" enctype="multipart/form-data" novalidate>
+      
+      <!-- Participant Information -->
+      <fieldset class="form-group">
+        <legend>Participant Information</legend>
+        
+        <div class="form-group">
+          <label for="participantName">
+            Full Name
+            <span class="required">*</span>
+          </label>
+          <input 
+            type="text" 
+            name="participantName" 
+            id="participantName" 
+            required 
+            placeholder="Enter your full name"
+            aria-describedby="participantNameError" 
+          />
+          <small id="participantNameError" class="error-message"></small>
+        </div>
+
+        <div class="form-group">
+          <label for="email">
+            Email Address
+            <span class="required">*</span>
+          </label>
+          <input 
+            type="email" 
+            name="email" 
+            id="email" 
+            required 
+            placeholder="your.email@example.com"
+            aria-describedby="emailError" 
+          />
+          <small id="emailError" class="error-message"></small>
+        </div>
+
+        <div class="form-group">
+          <label for="ageGroup">
+            Age Group
+            <span class="required">*</span>
+          </label>
+          <select name="ageGroup" id="ageGroup" required aria-describedby="ageGroupError">
+            <option value="">Select your age group...</option>
+            <option value="Under 18">Under 18</option>
+            <option value="18-24">18-24</option>
+            <option value="25-34">25-34</option>
+            <option value="35-44">35-44</option>
+            <option value="45-54">45-54</option>
+            <option value="55-64">55-64</option>
+            <option value="65+">65 or older</option>
+            <option value="Prefer not to say">Prefer not to say</option>
+          </select>
+          <small id="ageGroupError" class="error-message"></small>
+        </div>
+
+        <div class="form-group">
+          <label>
+            Gender
+            <span class="optional">(Optional)</span>
+          </label>
+          <div class="radio-group">
+            <label class="radio-label">
+              <input type="radio" name="gender" value="Male" />
+              <span class="radio-custom"></span>
+              Male
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="gender" value="Female" />
+              <span class="radio-custom"></span>
+              Female
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="gender" value="Non-binary" />
+              <span class="radio-custom"></span>
+              Non-binary
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="gender" value="Prefer not to say" />
+              <span class="radio-custom"></span>
+              Prefer not to say
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="location">
+            Location (City/Country)
+            <span class="optional">(Optional)</span>
+          </label>
+          <input 
+            type="text" 
+            name="location" 
+            id="location" 
+            placeholder="e.g., New York, USA"
+          />
+        </div>
+      </fieldset>
+
+      <!-- Section 1: General Questions -->
+      <fieldset class="form-group">
+        <legend>Section 1: General Questions</legend>
+        
+        <div class="form-group">
+          <label for="occupation">
+            Current Occupation / Field
+            <span class="required">*</span>
+          </label>
+          <input 
+            type="text" 
+            name="occupation" 
+            id="occupation" 
+            required 
+            placeholder="Your occupation or field of work/study"
+            aria-describedby="occupationError" 
+          />
+          <small id="occupationError" class="error-message"></small>
+        </div>
+
+        <div class="form-group">
+          <label for="educationLevel">
+            Highest Education Level
+            <span class="required">*</span>
+          </label>
+          <select name="educationLevel" id="educationLevel" required aria-describedby="educationLevelError">
+            <option value="">Select education level...</option>
+            <option value="High School">High School or equivalent</option>
+            <option value="Associate">Associate Degree</option>
+            <option value="Bachelor">Bachelor's Degree</option>
+            <option value="Master">Master's Degree</option>
+            <option value="Doctorate">Doctorate/PhD</option>
+            <option value="Professional">Professional Degree</option>
+            <option value="Other">Other</option>
+          </select>
+          <small id="educationLevelError" class="error-message"></small>
+        </div>
+
+        <div class="form-group">
+          <label for="experience">
+            Years of Experience in Your Field
+            <span class="optional">(Optional)</span>
+          </label>
+          <input 
+            type="number" 
+            name="experience" 
+            id="experience" 
+            min="0"
+            max="60"
+            placeholder="Number of years"
+          />
+        </div>
+      </fieldset>
+
+      <!-- Section 2: Multiple Choice Questions -->
+      <fieldset class="form-group">
+        <legend>Section 2: Multiple Choice Questions</legend>
+        
+        <div class="form-group">
+          <label>
+            How did you hear about us?
+            <span class="required">*</span>
+          </label>
+          <div class="checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" name="hearAbout" value="Social Media" />
+              <span class="checkbox-custom"></span>
+              Social Media
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" name="hearAbout" value="Search Engine" />
+              <span class="checkbox-custom"></span>
+              Search Engine
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" name="hearAbout" value="Friend/Colleague" />
+              <span class="checkbox-custom"></span>
+              Friend or Colleague
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" name="hearAbout" value="Advertisement" />
+              <span class="checkbox-custom"></span>
+              Advertisement
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" name="hearAbout" value="Blog/Article" />
+              <span class="checkbox-custom"></span>
+              Blog or Article
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" name="hearAbout" value="Other" />
+              <span class="checkbox-custom"></span>
+              Other
+            </label>
+          </div>
+          <small id="hearAboutError" class="error-message"></small>
+        </div>
+
+        <div class="form-group">
+          <label>
+            Which features are most important to you? (Select all that apply)
+            <span class="required">*</span>
+          </label>
+          <div class="checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" name="importantFeatures" value="Ease of Use" />
+              <span class="checkbox-custom"></span>
+              Ease of Use
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" name="importantFeatures" value="Price" />
+              <span class="checkbox-custom"></span>
+              Price/Affordability
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" name="importantFeatures" value="Performance" />
+              <span class="checkbox-custom"></span>
+              Performance
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" name="importantFeatures" value="Customer Support" />
+              <span class="checkbox-custom"></span>
+              Customer Support
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" name="importantFeatures" value="Security" />
+              <span class="checkbox-custom"></span>
+              Security
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" name="importantFeatures" value="Customization" />
+              <span class="checkbox-custom"></span>
+              Customization Options
+            </label>
+          </div>
+          <small id="importantFeaturesError" class="error-message"></small>
+        </div>
+
+        <div class="form-group">
+          <label>
+            How frequently do you use similar products/services?
+            <span class="required">*</span>
+          </label>
+          <div class="radio-group">
+            <label class="radio-label">
+              <input type="radio" name="frequency" value="Daily" required />
+              <span class="radio-custom"></span>
+              Daily
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="frequency" value="Weekly" />
+              <span class="radio-custom"></span>
+              Weekly
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="frequency" value="Monthly" />
+              <span class="radio-custom"></span>
+              Monthly
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="frequency" value="Rarely" />
+              <span class="radio-custom"></span>
+              Rarely
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="frequency" value="Never" />
+              <span class="radio-custom"></span>
+              Never
+            </label>
+          </div>
+          <small id="frequencyError" class="error-message"></small>
+        </div>
+      </fieldset>
+
+      <!-- Section 3: Rating Questions -->
+      <fieldset class="form-group">
+        <legend>Section 3: Rating & Satisfaction</legend>
+        
+        <div class="form-group">
+          <label>
+            Overall Satisfaction Rating
+            <span class="required">*</span>
+          </label>
+          <div class="rating-scale" role="radiogroup" aria-label="Satisfaction Rating" aria-describedby="satisfactionError">
+            <label class="rating-option" data-value="1" title="Very Dissatisfied">
+              <input type="radio" name="satisfaction" value="1" required />
+              <span class="rating-emoji">😞</span>
+              <span class="rating-number">1</span>
+            </label>
+            <label class="rating-option" data-value="2" title="Dissatisfied">
+              <input type="radio" name="satisfaction" value="2" />
+              <span class="rating-emoji">😕</span>
+              <span class="rating-number">2</span>
+            </label>
+            <label class="rating-option" data-value="3" title="Neutral">
+              <input type="radio" name="satisfaction" value="3" />
+              <span class="rating-emoji">😐</span>
+              <span class="rating-number">3</span>
+            </label>
+            <label class="rating-option" data-value="4" title="Satisfied">
+              <input type="radio" name="satisfaction" value="4" />
+              <span class="rating-emoji">🙂</span>
+              <span class="rating-number">4</span>
+            </label>
+            <label class="rating-option" data-value="5" title="Very Satisfied">
+              <input type="radio" name="satisfaction" value="5" />
+              <span class="rating-emoji">😄</span>
+              <span class="rating-number">5</span>
+            </label>
+          </div>
+          <small id="satisfactionError" class="error-message"></small>
+        </div>
+
+        <div class="form-group">
+          <label>
+            How likely are you to recommend this to others?
+            <span class="required">*</span>
+          </label>
+          <div class="rating-scale" role="radiogroup" aria-label="Recommendation Rating" aria-describedby="recommendError">
+            <label class="rating-option" data-value="1" title="Not at all likely">
+              <input type="radio" name="recommend" value="1" required />
+              <span class="rating-number">1</span>
+            </label>
+            <label class="rating-option" data-value="2">
+              <input type="radio" name="recommend" value="2" />
+              <span class="rating-number">2</span>
+            </label>
+            <label class="rating-option" data-value="3">
+              <input type="radio" name="recommend" value="3" />
+              <span class="rating-number">3</span>
+            </label>
+            <label class="rating-option" data-value="4">
+              <input type="radio" name="recommend" value="4" />
+              <span class="rating-number">4</span>
+            </label>
+            <label class="rating-option" data-value="5">
+              <input type="radio" name="recommend" value="5" />
+              <span class="rating-number">5</span>
+            </label>
+            <label class="rating-option" data-value="6">
+              <input type="radio" name="recommend" value="6" />
+              <span class="rating-number">6</span>
+            </label>
+            <label class="rating-option" data-value="7">
+              <input type="radio" name="recommend" value="7" />
+              <span class="rating-number">7</span>
+            </label>
+            <label class="rating-option" data-value="8">
+              <input type="radio" name="recommend" value="8" />
+              <span class="rating-number">8</span>
+            </label>
+            <label class="rating-option" data-value="9">
+              <input type="radio" name="recommend" value="9" />
+              <span class="rating-number">9</span>
+            </label>
+            <label class="rating-option" data-value="10" title="Extremely likely">
+              <input type="radio" name="recommend" value="10" />
+              <span class="rating-number">10</span>
+            </label>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 12px; color: #6b7280;">
+            <span>Not likely</span>
+            <span>Extremely likely</span>
+          </div>
+          <small id="recommendError" class="error-message"></small>
+        </div>
+
+        <div class="form-group">
+          <label>
+            Rate the following aspects:
+            <span class="required">*</span>
+          </label>
+          
+          <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: 500;">Quality</label>
+            <div class="rating-scale" role="radiogroup" aria-label="Quality Rating">
+              <label class="rating-option" data-value="1">
+                <input type="radio" name="ratingQuality" value="1" required />
+                <span class="rating-emoji">⭐</span>
+              </label>
+              <label class="rating-option" data-value="2">
+                <input type="radio" name="ratingQuality" value="2" />
+                <span class="rating-emoji">⭐⭐</span>
+              </label>
+              <label class="rating-option" data-value="3">
+                <input type="radio" name="ratingQuality" value="3" />
+                <span class="rating-emoji">⭐⭐⭐</span>
+              </label>
+              <label class="rating-option" data-value="4">
+                <input type="radio" name="ratingQuality" value="4" />
+                <span class="rating-emoji">⭐⭐⭐⭐</span>
+              </label>
+              <label class="rating-option" data-value="5">
+                <input type="radio" name="ratingQuality" value="5" />
+                <span class="rating-emoji">⭐⭐⭐⭐⭐</span>
+              </label>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: 500;">Value for Money</label>
+            <div class="rating-scale" role="radiogroup" aria-label="Value Rating">
+              <label class="rating-option" data-value="1">
+                <input type="radio" name="ratingValue" value="1" required />
+                <span class="rating-emoji">⭐</span>
+              </label>
+              <label class="rating-option" data-value="2">
+                <input type="radio" name="ratingValue" value="2" />
+                <span class="rating-emoji">⭐⭐</span>
+              </label>
+              <label class="rating-option" data-value="3">
+                <input type="radio" name="ratingValue" value="3" />
+                <span class="rating-emoji">⭐⭐⭐</span>
+              </label>
+              <label class="rating-option" data-value="4">
+                <input type="radio" name="ratingValue" value="4" />
+                <span class="rating-emoji">⭐⭐⭐⭐</span>
+              </label>
+              <label class="rating-option" data-value="5">
+                <input type="radio" name="ratingValue" value="5" />
+                <span class="rating-emoji">⭐⭐⭐⭐⭐</span>
+              </label>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 10px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: 500;">User Experience</label>
+            <div class="rating-scale" role="radiogroup" aria-label="User Experience Rating">
+              <label class="rating-option" data-value="1">
+                <input type="radio" name="ratingUX" value="1" required />
+                <span class="rating-emoji">⭐</span>
+              </label>
+              <label class="rating-option" data-value="2">
+                <input type="radio" name="ratingUX" value="2" />
+                <span class="rating-emoji">⭐⭐</span>
+              </label>
+              <label class="rating-option" data-value="3">
+                <input type="radio" name="ratingUX" value="3" />
+                <span class="rating-emoji">⭐⭐⭐</span>
+              </label>
+              <label class="rating-option" data-value="4">
+                <input type="radio" name="ratingUX" value="4" />
+                <span class="rating-emoji">⭐⭐⭐⭐</span>
+              </label>
+              <label class="rating-option" data-value="5">
+                <input type="radio" name="ratingUX" value="5" />
+                <span class="rating-emoji">⭐⭐⭐⭐⭐</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- Section 4: Open-Ended Questions -->
+      <fieldset class="form-group">
+        <legend>Section 4: Your Feedback</legend>
+        
+        <div class="form-group">
+          <label for="likes">
+            What do you like most?
+            <span class="required">*</span>
+          </label>
+          <textarea 
+            name="likes" 
+            id="likes" 
+            rows="4" 
+            maxlength="2000"
+            required 
+            placeholder="Tell us what you appreciate the most..."
+            aria-describedby="likesError likesCounter"
+          ></textarea>
+          <div class="field-footer">
+            <small id="likesError" class="error-message"></small>
+            <small id="likesCounter" class="char-counter">0 / 2000</small>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="improvements">
+            What could be improved?
+            <span class="required">*</span>
+          </label>
+          <textarea 
+            name="improvements" 
+            id="improvements" 
+            rows="4" 
+            maxlength="2000"
+            required 
+            placeholder="Share your suggestions for improvement..."
+            aria-describedby="improvementsError improvementsCounter"
+          ></textarea>
+          <div class="field-footer">
+            <small id="improvementsError" class="error-message"></small>
+            <small id="improvementsCounter" class="char-counter">0 / 2000</small>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="additionalComments">
+            Additional Comments
+            <span class="optional">(Optional)</span>
+          </label>
+          <textarea 
+            name="additionalComments" 
+            id="additionalComments" 
+            rows="4"
+            maxlength="3000"
+            placeholder="Any other thoughts, comments, or feedback..."
+            aria-describedby="additionalCommentsCounter"
+          ></textarea>
+          <div class="field-footer">
+            <small class="error-message"></small>
+            <small id="additionalCommentsCounter" class="char-counter">0 / 3000</small>
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- Preferences -->
+      <fieldset class="form-group">
+        <legend>Communication Preferences</legend>
+        
+        <div class="form-group">
+          <label>
+            Would you like to receive updates?
+            <span class="optional">(Optional)</span>
+          </label>
+          <div class="checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" name="updates" value="Email Newsletter" />
+              <span class="checkbox-custom"></span>
+              Email Newsletter
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" name="updates" value="Product Updates" />
+              <span class="checkbox-custom"></span>
+              Product Updates
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" name="updates" value="Special Offers" />
+              <span class="checkbox-custom"></span>
+              Special Offers
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" name="updates" value="No Updates" />
+              <span class="checkbox-custom"></span>
+              No, don't send me updates
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>
+            May we contact you for follow-up?
+            <span class="optional">(Optional)</span>
+          </label>
+          <div class="radio-group">
+            <label class="radio-label">
+              <input type="radio" name="followup" value="Yes" />
+              <span class="radio-custom"></span>
+              Yes, you may contact me
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="followup" value="No" />
+              <span class="radio-custom"></span>
+              No, please don't contact me
+            </label>
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- Action Buttons -->
+      <div class="form-actions">
+        <button type="button" id="clearDraftBtn" class="btn btn-secondary">
+          Clear Draft
+        </button>
+        <button type="submit" id="submitBtn" class="btn btn-primary">
+          <span class="btn-text">Submit Survey</span>
+          <span class="btn-loader"></span>
+        </button>
+      </div>
+    </form>
+
+    <!-- Success Message -->
+    <div id="successMessage" class="success-message" role="alert" aria-live="assertive">
+      <div class="success-icon">✓</div>
+      <h2>Survey Submitted Successfully!</h2>
+      <p>Thank you for taking the time to complete our survey. Your feedback is valuable to us.</p>
+      <button type="button" id="submitAnotherBtn" class="btn btn-primary">Submit Another Response</button>
+    </div>
+  </div>
+
+  <script src="../script-enhanced.js"></script>
+</body>
+</html>

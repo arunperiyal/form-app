@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Field Data Collection - Form Template</title>
+  <link rel="stylesheet" href="../styles-enhanced.css">
+  <style>
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: white;
+      text-decoration: none;
+      padding: 8px 16px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 8px;
+      margin-bottom: 20px;
+      transition: all 0.3s;
+    }
+    .back-link:hover {
+      background: rgba(255,255,255,0.3);
+    }
+  </style>
+</head>
+<body>
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container" role="status" aria-live="polite"></div>
+
+  <div class="form-container">
+    <a href="/" class="back-link">← Back to Templates</a>
+    
+    <div class="form-header">
+      <h1>🔬 Field Data Collection</h1>
+      <p class="form-subtitle">Collect field research data with location, observations, and measurements</p>
+      
+      <!-- Progress Indicator -->
+      <div class="progress-wrapper">
+        <div class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <span class="progress-text" id="progressText">0% Complete</span>
+      </div>
+    </div>
+
+    <!-- Draft Status -->
+    <div id="draftStatus" class="draft-status">
+      <span class="draft-icon">💾</span>
+      <span id="draftText">Draft auto-saved</span>
+    </div>
+
+    <form id="mainForm" enctype="multipart/form-data" novalidate>
+      
+      <!-- Researcher Information -->
+      <fieldset class="form-group">
+        <legend>Researcher Information</legend>
+        
+        <div class="form-group">
+          <label for="researcherName">
+            Researcher Name
+            <span class="required">*</span>
+          </label>
+          <input 
+            type="text" 
+            name="researcherName" 
+            id="researcherName" 
+            required 
+            placeholder="Enter your full name"
+            aria-describedby="researcherNameError" 
+          />
+          <small id="researcherNameError" class="error-message"></small>
+        </div>
+
+        <div class="form-group">
+          <label for="researcherEmail">
+            Email Address
+            <span class="required">*</span>
+          </label>
+          <input 
+            type="email" 
+            name="researcherEmail" 
+            id="researcherEmail" 
+            required 
+            placeholder="researcher@example.com"
+            aria-describedby="researcherEmailError" 
+          />
+          <small id="researcherEmailError" class="error-message"></small>
+        </div>
+
+        <div class="form-group">
+          <label for="institution">
+            Institution / Organization
+            <span class="optional">(Optional)</span>
+          </label>
+          <input 
+            type="text" 
+            name="institution" 
+            id="institution" 
+            placeholder="Your institution name"
+          />
+        </div>
+      </fieldset>
+
+      <!-- Field Site Information -->
+      <fieldset class="form-group">
+        <legend>Field Site Information</legend>
+        
+        <div class="form-group">
+          <label for="siteName">
+            Site Name / Location
+            <span class="required">*</span>
+          </label>
+          <input 
+            type="text" 
+            name="siteName" 
+            id="siteName" 
+            required 
+            placeholder="Enter site name or location"
+            aria-describedby="siteNameError" 
+          />
+          <small id="siteNameError" class="error-message"></small>
+        </div>
+
+        <div class="form-group">
+          <label for="coordinates">
+            GPS Coordinates
+            <span class="optional">(Optional)</span>
+          </label>
+          <input 
+            type="text" 
+            name="coordinates" 
+            id="coordinates" 
+            placeholder="Latitude, Longitude (e.g., 40.7128, -74.0060)"
+            pattern="^-?\d+\.?\d*,\s*-?\d+\.?\d*$"
+            aria-describedby="coordinatesError" 
+          />
+          <small id="coordinatesError" class="error-message"></small>
+        </div>
+
+        <div class="form-group">
+          <label for="collectionDate">
+            Date of Collection
+            <span class="required">*</span>
+          </label>
+          <input 
+            type="date" 
+            name="collectionDate" 
+            id="collectionDate" 
+            required 
+            aria-describedby="collectionDateError" 
+          />
+          <small id="collectionDateError" class="error-message"></small>
+        </div>
+
+        <div class="form-group">
+          <label for="collectionTime">
+            Time of Collection
+            <span class="required">*</span>
+          </label>
+          <input 
+            type="time" 
+            name="collectionTime" 
+            id="collectionTime" 
+            required 
+            aria-describedby="collectionTimeError" 
+          />
+          <small id="collectionTimeError" class="error-message"></small>
+        </div>
+      </fieldset>
+
+      <!-- Weather Conditions -->
+      <fieldset class="form-group">
+        <legend>Weather Conditions</legend>
+        
+        <div class="form-group">
+          <label for="temperature">
+            Temperature (°C)
+            <span class="optional">(Optional)</span>
+          </label>
+          <input 
+            type="number" 
+            name="temperature" 
+            id="temperature" 
+            step="0.1"
+            placeholder="e.g., 25.5"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="weatherCondition">
+            Weather Condition
+            <span class="optional">(Optional)</span>
+          </label>
+          <select name="weatherCondition" id="weatherCondition">
+            <option value="">Select condition...</option>
+            <option value="Sunny">Sunny</option>
+            <option value="Partly Cloudy">Partly Cloudy</option>
+            <option value="Cloudy">Cloudy</option>
+            <option value="Rainy">Rainy</option>
+            <option value="Stormy">Stormy</option>
+            <option value="Foggy">Foggy</option>
+            <option value="Windy">Windy</option>
+          </select>
+        </div>
+      </fieldset>
+
+      <!-- Observations -->
+      <div class="form-group">
+        <label for="observations">
+          Field Observations
+          <span class="required">*</span>
+        </label>
+        <textarea 
+          name="observations" 
+          id="observations" 
+          rows="6" 
+          maxlength="5000"
+          required 
+          placeholder="Describe your field observations in detail..."
+          aria-describedby="observationsError observationsCounter"
+        ></textarea>
+        <div class="field-footer">
+          <small id="observationsError" class="error-message"></small>
+          <small id="observationsCounter" class="char-counter">0 / 5000</small>
+        </div>
+      </div>
+
+      <!-- Measurements -->
+      <div class="form-group">
+        <label for="measurements">
+          Measurements Taken
+          <span class="optional">(Optional)</span>
+        </label>
+        <textarea 
+          name="measurements" 
+          id="measurements" 
+          rows="4" 
+          maxlength="2000"
+          placeholder="List any measurements, counts, or quantitative data..."
+          aria-describedby="measurementsCounter"
+        ></textarea>
+        <div class="field-footer">
+          <small class="error-message"></small>
+          <small id="measurementsCounter" class="char-counter">0 / 2000</small>
+        </div>
+      </div>
+
+      <!-- Sample Collection -->
+      <fieldset class="form-group">
+        <legend>Sample Collection</legend>
+        
+        <div class="form-group">
+          <label>
+            Were samples collected?
+            <span class="required">*</span>
+          </label>
+          <div class="radio-group">
+            <label class="radio-label">
+              <input type="radio" name="samplesCollected" value="Yes" required />
+              <span class="radio-custom"></span>
+              Yes
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="samplesCollected" value="No" />
+              <span class="radio-custom"></span>
+              No
+            </label>
+          </div>
+          <small id="samplesCollectedError" class="error-message"></small>
+        </div>
+
+        <div class="form-group">
+          <label for="sampleDetails">
+            Sample Details
+            <span class="optional">(If applicable)</span>
+          </label>
+          <textarea 
+            name="sampleDetails" 
+            id="sampleDetails" 
+            rows="3"
+            placeholder="Describe samples collected, sample IDs, storage conditions..."
+          ></textarea>
+        </div>
+      </fieldset>
+
+      <!-- Photo Documentation -->
+      <div class="form-group">
+        <label for="photos">
+          Photo Documentation
+          <span class="optional">(Optional, Max 5MB)</span>
+        </label>
+        <div class="file-upload-wrapper">
+          <input 
+            type="file" 
+            name="photos" 
+            id="photos" 
+            accept="image/*,.pdf"
+            aria-describedby="photosError" 
+          />
+          <label for="photos" class="file-upload-label">
+            <span class="file-upload-icon">📷</span>
+            <span class="file-upload-text">Choose photos or drag here</span>
+            <span class="file-upload-subtext">Images or PDF (Max 5MB)</span>
+          </label>
+          <div id="filePreview" class="file-preview"></div>
+        </div>
+        <small id="photosError" class="error-message"></small>
+      </div>
+
+      <!-- Additional Notes -->
+      <div class="form-group">
+        <label for="additionalNotes">
+          Additional Notes
+          <span class="optional">(Optional)</span>
+        </label>
+        <textarea 
+          name="additionalNotes" 
+          id="additionalNotes" 
+          rows="4"
+          maxlength="2000"
+          placeholder="Any additional information, concerns, or follow-up required..."
+          aria-describedby="additionalNotesCounter"
+        ></textarea>
+        <div class="field-footer">
+          <small class="error-message"></small>
+          <small id="additionalNotesCounter" class="char-counter">0 / 2000</small>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="form-actions">
+        <button type="button" id="clearDraftBtn" class="btn btn-secondary">
+          Clear Draft
+        </button>
+        <button type="submit" id="submitBtn" class="btn btn-primary">
+          <span class="btn-text">Submit Field Data</span>
+          <span class="btn-loader"></span>
+        </button>
+      </div>
+    </form>
+
+    <!-- Success Message -->
+    <div id="successMessage" class="success-message" role="alert" aria-live="assertive">
+      <div class="success-icon">✓</div>
+      <h2>Field Data Submitted Successfully!</h2>
+      <p>Your field data collection has been recorded. Thank you for your submission.</p>
+      <button type="button" id="submitAnotherBtn" class="btn btn-primary">Submit Another Entry</button>
+    </div>
+  </div>
+
+  <script src="../script-enhanced.js"></script>
+</body>
+</html>

@@ -1,3 +1,4 @@
+require('dotenv').config({ quiet: true });
 const express = require('express');
 const app = express();
 const path = require('path');
@@ -5,13 +6,23 @@ const multer = require('multer');
 const fs = require('fs');
 const sqlite3 = require('sqlite3').verbose();
 const jwt = require('jsonwebtoken');
-const crypto = require('crypto');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+
+// Import custom modules
+const logger = require('./config/logger');
+const { errorHandler, AppError, catchAsync } = require('./middleware/errorHandler');
+const { formValidationRules, loginValidationRules, validate } = require('./middleware/validation');
+const { hashPassword, comparePassword, validateEnvVariables } = require('./utils/auth');
+
+// Validate environment variables on startup
+validateEnvVariables();
 
 // Configuration
 const PORT = process.env.PORT || 3000;
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123'; // Change this in production!
-const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(64).toString('hex');
-const DB_PATH = path.join(__dirname, 'responses.db');
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+const JWT_SECRET = process.env.JWT_SECRET;
+const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'responses.db');
 
 // Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, 'uploads');
@@ -22,9 +33,10 @@ if (!fs.existsSync(uploadsDir)) {
 // Connect to SQLite database
 const db = new sqlite3.Database(DB_PATH, (err) => {
   if (err) {
-    console.error('Database connection error:', err);
+    logger.error('Database connection error:', err);
+    process.exit(1);
   } else {
-    console.log('Connected to the SQLite database');
+    logger.info('Connected to the SQLite database');
     initDatabase();
   }
 });
@@ -51,9 +63,10 @@ function initDatabase() {
     )
   `, (err) => {
     if (err) {
-      console.error('Error creating submissions table:', err);
+      logger.error('Error creating submissions table:', err);
+      process.exit(1);
     } else {
-      console.log('Submissions table created or already exists');
+      logger.info('Submissions table created or already exists');
     }
   });
 }
@@ -75,7 +88,7 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 1024 * 1024 // 1MB limit
+    fileSize: process.env.MAX_FILE_SIZE || 1024 * 1024 // 1MB limit
   },
   fileFilter: function(req, file, cb) {
     // Accept only specific file types
@@ -83,10 +96,38 @@ const upload = multer({
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Invalid file type. Only PDF, JPG, and PNG are allowed.'));
+      cb(new AppError('Invalid file type. Only PDF, JPG, and PNG are allowed.', 400));
     }
   }
 });
+
+// Security Middleware
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", "data:"]
+    }
+  }
+}));
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again later.'
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5, // 5 login attempts per 15 minutes
+  message: 'Too many login attempts, please try again later.'
+});
+
+app.use('/api/', limiter);
+app.use('/admin/login', authLimiter);
 
 // Middleware
 app.use(express.json());
@@ -100,12 +141,13 @@ function authenticateToken(req, res, next) {
   const token = authHeader && authHeader.split(' ')[1];
   
   if (!token) {
-    return res.status(401).json({ success: false, error: 'Unauthorized' });
+    return next(new AppError('Unauthorized - No token provided', 401));
   }
 
   jwt.verify(token, JWT_SECRET, (err, user) => {
     if (err) {
-      return res.status(401).json({ success: false, error: 'Invalid token' });
+      logger.warn('Invalid token attempt', { ip: req.ip, error: err.message });
+      return next(new AppError('Invalid or expired token', 401));
     }
     req.user = user;
     next();
@@ -121,21 +163,34 @@ app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
 // Admin login
-app.post('/admin/login', (req, res) => {
+app.post('/admin/login', loginValidationRules, validate, catchAsync(async (req, res, next) => {
   const { password } = req.body;
   
   if (password !== ADMIN_PASSWORD) {
-    return res.status(401).json({ success: false, error: 'Invalid password' });
+    logger.warn('Failed login attempt', { ip: req.ip });
+    return next(new AppError('Invalid password', 401));
   }
+  
+  logger.info('Successful admin login', { ip: req.ip });
   
   // Generate token
   const token = jwt.sign({ isAdmin: true }, JWT_SECRET, { expiresIn: '2h' });
   res.json({ success: true, token });
-});
+}));
 
 // Get submissions
-app.get('/admin/submissions', authenticateToken, (req, res) => {
+app.get('/admin/submissions', authenticateToken, catchAsync(async (req, res, next) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
   const offset = (page - 1) * limit;
@@ -143,8 +198,8 @@ app.get('/admin/submissions', authenticateToken, (req, res) => {
   // Count total submissions
   db.get('SELECT COUNT(*) as total FROM submissions', [], (err, count) => {
     if (err) {
-      console.error('Error counting submissions:', err);
-      return res.status(500).json({ success: false, error: 'Database error' });
+      logger.error('Error counting submissions:', err);
+      return next(new AppError('Database error', 500));
     }
     
     const total = count.total;
@@ -153,8 +208,8 @@ app.get('/admin/submissions', authenticateToken, (req, res) => {
     // Get submissions for current page
     db.all('SELECT * FROM submissions ORDER BY id DESC LIMIT ? OFFSET ?', [limit, offset], (err, rows) => {
       if (err) {
-        console.error('Error fetching submissions:', err);
-        return res.status(500).json({ success: false, error: 'Database error' });
+        logger.error('Error fetching submissions:', err);
+        return next(new AppError('Database error', 500));
       }
       
       // Process multiSelect values
@@ -180,29 +235,29 @@ app.get('/admin/submissions', authenticateToken, (req, res) => {
       });
     });
   });
-});
+}));
 
 // Delete submission
-app.delete('/admin/submissions/:id', authenticateToken, (req, res) => {
+app.delete('/admin/submissions/:id', authenticateToken, catchAsync(async (req, res, next) => {
   const id = req.params.id;
   
   // Get file info before deleting
   db.get('SELECT file FROM submissions WHERE id = ?', [id], (err, row) => {
     if (err) {
-      console.error('Error retrieving submission file:', err);
-      return res.status(500).json({ success: false, error: 'Database error' });
+      logger.error('Error retrieving submission file:', err);
+      return next(new AppError('Database error', 500));
     }
     
     // Delete record from database
     db.run('DELETE FROM submissions WHERE id = ?', [id], function(err) {
       if (err) {
-        console.error('Error deleting submission:', err);
-        return res.status(500).json({ success: false, error: 'Database error' });
+        logger.error('Error deleting submission:', err);
+        return next(new AppError('Database error', 500));
       }
       
       // If no rows were affected
       if (this.changes === 0) {
-        return res.status(404).json({ success: false, error: 'Submission not found' });
+        return next(new AppError('Submission not found', 404));
       }
       
       // Delete associated file if exists
@@ -210,22 +265,23 @@ app.delete('/admin/submissions/:id', authenticateToken, (req, res) => {
         const filePath = path.join(uploadsDir, row.file);
         if (fs.existsSync(filePath)) {
           fs.unlink(filePath, (err) => {
-            if (err) console.error('Error deleting file:', err);
+            if (err) logger.error('Error deleting file:', err);
           });
         }
       }
       
+      logger.info('Submission deleted', { id, admin: req.user });
       res.json({ success: true, message: 'Submission deleted successfully' });
     });
   });
-});
+}));
 
 // Export submissions as CSV
-app.get('/admin/export-csv', authenticateToken, (req, res) => {
+app.get('/admin/export-csv', authenticateToken, catchAsync(async (req, res, next) => {
   db.all('SELECT * FROM submissions ORDER BY id DESC', [], (err, rows) => {
     if (err) {
-      console.error('Error fetching submissions for CSV:', err);
-      return res.status(500).json({ success: false, error: 'Database error' });
+      logger.error('Error fetching submissions for CSV:', err);
+      return next(new AppError('Database error', 500));
     }
     
     // Convert to CSV
@@ -266,16 +322,16 @@ app.get('/admin/export-csv', authenticateToken, (req, res) => {
     });
     
     // Send CSV response
+    logger.info('CSV export completed', { admin: req.user, rowCount: rows.length });
     res.setHeader('Content-Type', 'text/csv');
     res.setHeader('Content-Disposition', `attachment; filename=submissions_${new Date().toISOString().slice(0,10)}.csv`);
     res.send(csv);
   });
-});
+}));
 
 // Submit form
-app.post('/submit-form', upload.single('upload'), (req, res) => {
-  try {
-    const formData = req.body;
+app.post('/submit-form', upload.single('upload'), formValidationRules, validate, catchAsync(async (req, res, next) => {
+  const formData = req.body;
     
     // Process multiSelect values (arrays)
     let multiSelect = formData.multiSelect;
@@ -315,21 +371,36 @@ app.post('/submit-form', upload.single('upload'), (req, res) => {
     
     db.run(sql, values, function(err) {
       if (err) {
-        console.error('Error saving submission:', err);
-        return res.status(500).json({ success: false, message: 'Error saving your submission' });
+        logger.error('Error saving submission:', err);
+        return next(new AppError('Error saving your submission', 500));
       }
       
+      logger.info('Form submission successful', { id: this.lastID, ip: req.ip });
       res.json({ success: true, message: 'Form submitted successfully!', id: this.lastID });
     });
-  } catch (error) {
-    console.error('Form submission error:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
-  }
+}));
+
+// 404 handler
+app.use((req, res, next) => {
+  next(new AppError(`Cannot find ${req.originalUrl} on this server`, 404));
+});
+
+// Error handling middleware (must be last)
+app.use(errorHandler);
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  logger.info('SIGTERM received, shutting down gracefully');
+  db.close(() => {
+    logger.info('Database connection closed');
+    process.exit(0);
+  });
 });
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`Admin panel available at http://localhost:${PORT}/admin`);
+  logger.info(`Server running on port ${PORT}`);
+  logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  logger.info(`Admin panel available at http://localhost:${PORT}/admin`);
 });
 
